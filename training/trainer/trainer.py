@@ -72,12 +72,14 @@ class Trainer(object):
         if 'task_target' not in config:
             self.log_dir = os.path.join(
                 self.config['log_dir'],
+                self.config['model_name'],
                 self.config['model_name'] + '_' + self.timenow
             )
         else:
             task_str = f"_{config['task_target']}" if config['task_target'] is not None else ""
             self.log_dir = os.path.join(
                 self.config['log_dir'],
+                self.config['model_name'],
                 self.config['model_name'] + task_str + '_' + self.timenow
             )
         os.makedirs(self.log_dir, exist_ok=True)
@@ -219,7 +221,7 @@ class Trainer(object):
 
         self.logger.info("===> Epoch[{}] start!".format(epoch))
         if epoch>=1:
-            times_per_epoch = 2
+            times_per_epoch = 1 # 2 initially
         else:
             times_per_epoch = 1
 

@@ -5,7 +5,7 @@
 
 The code is designed for self-blending method (SBI, CVPR 2024).
 '''
-
+import os
 import sys
 sys.path.append('.')
 
@@ -54,9 +54,32 @@ class SBIDataset(DeepfakeAbstractBaseDataset):
         else:
             fake_label = 1
 
+        # # ----remove from here -----
+
+        # # Convert RGB to BGR
+        # fake_image_bgr = cv2.cvtColor(fake_image, cv2.COLOR_RGB2BGR)
+        # real_image_bgr = cv2.cvtColor(real_image, cv2.COLOR_RGB2BGR)
+
+        # # if index == 604:
+        # #     print("idx, landmark shape: ", index, landmark.shape)
+        # #     print("landmark=", landmark)
+
+        # # Draw landmark points on the images
+        # for point in landmark:
+        #     cv2.circle(fake_image_bgr, (int(point[0]), int(point[1])), 2, (0, 0, 255), -1)
+        #     cv2.circle(real_image_bgr, (int(point[0]), int(point[1])), 2, (0, 0, 255), -1)
+
+        # # Save images using cv2.imwrite
+        # os.makedirs('./tmp_img_380_ldm2', exist_ok=True)
+        # cv2.imwrite(f'./tmp_img_380_ldm2/{index}_fake_with_landmarks.png', fake_image_bgr)
+        # cv2.imwrite(f'./tmp_img_380_ldm2/{index}_real_with_landmarks.png', real_image_bgr)
+
+        # # ---end of remove----
+
         # To tensor and normalize for fake and real images
         fake_image_trans = self.normalize(self.to_tensor(fake_image))
         real_image_trans = self.normalize(self.to_tensor(real_image))
+
 
         return {"fake": (fake_image_trans, fake_label), 
                 "real": (real_image_trans, real_label)}

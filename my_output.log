@@ -1,0 +1,320 @@
+nohup: ignoring input
+/raid/dtle/deepfake/DeepfakeBench/miniconda3/envs/DeepfakeBench/lib/python3.7/site-packages/torch/distributed/launch.py:186: FutureWarning: The module torch.distributed.launch is deprecated
+and will be removed in future. Use torchrun.
+Note that --use_env is set by default in torchrun.
+If your script expects `--local_rank` argument to be set, please
+change it to read from `os.environ['LOCAL_RANK']` instead. See 
+https://pytorch.org/docs/stable/distributed.html#launch-utility for 
+further instructions
+
+  FutureWarning,
+WARNING:torch.distributed.run:
+*****************************************
+Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+*****************************************
+2025-01-28 02:32:07,589 - INFO - Save log to ./logs/training/sbi_2025-01-28-02-32-07
+2025-01-28 02:32:07,589 - INFO - --------------- Configuration ---------------
+2025-01-28 02:32:07,589 - INFO - Parameters: 
+log_dir: ./logs/training/
+pretrained: /data/home/zhiyuanyan/DeepfakeBench/training/pretrained/xception-b5690688.pth
+model_name: sbi
+backbone_name: efficientnetb4
+backbone_config: {'mode': 'original', 'num_classes': 3, 'inc': 3, 'dropout': False, 'pretrained': True}
+all_dataset: ['FaceForensics++', 'FF-F2F', 'FF-DF', 'FF-FS', 'FF-NT', 'FaceShifter', 'DeepFakeDetection', 'Celeb-DF-v1', 'Celeb-DF-v2', 'DFDCP', 'DFDC', 'DeeperForensics-1.0', 'UADFV']
+train_dataset: ['FaceForensics++']
+test_dataset: ['Celeb-DF-v2', 'roop', 'FaceShifter']
+dataset_type: blend
+compression: c23
+train_batchSize: 24
+test_batchSize: 32
+workers: 8
+frame_num: {'train': 8, 'test': 32}
+resolution: 256
+with_mask: False
+with_landmark: True
+save_ckpt: False
+save_feat: False
+use_data_augmentation: False
+data_aug: {'flip_prob': 0.5, 'rotate_prob': 0.5, 'rotate_limit': [-10, 10], 'blur_prob': 0.5, 'blur_limit': [3, 7], 'brightness_prob': 0.5, 'brightness_limit': [-0.1, 0.1], 'contrast_limit': [-0.1, 0.1], 'quality_lower': 40, 'quality_upper': 100}
+mean: [0.485, 0.456, 0.406]
+std: [0.229, 0.224, 0.225]
+optimizer: {'type': 'adam', 'adam': {'lr': 0.0002, 'beta1': 0.9, 'beta2': 0.999, 'eps': 1e-08, 'weight_decay': 0.0005, 'amsgrad': False}, 'sgd': {'lr': 0.0002, 'momentum': 0.9, 'weight_decay': 0.0005}, 'sam': {'lr': 0.001, 'momentum': 0.9}}
+lr_scheduler: step
+lr_step: 3
+lr_gamma: 0.4
+nEpochs: 50
+start_epoch: 0
+save_epoch: 1
+rec_iter: 100
+logdir: ./logs
+manualSeed: 1024
+loss_func: cross_entropy
+losstype: None
+metric_scoring: auc
+cuda: True
+cudnn: True
+mode: train
+lmdb: False
+dry_run: False
+rgb_dir: datasets/rgb
+lmdb_dir: datasets/lmdb
+dataset_json_folder: ./preprocessing/dataset_json
+SWA: False
+save_avg: True
+label_dict: {'DFD_fake': 1, 'DFD_real': 0, 'FF-SH': 1, 'FF-F2F': 1, 'FF-DF': 1, 'FF-FS': 1, 'FF-NT': 1, 'FF-FH': 1, 'FF-real': 0, 'CelebDFv1_real': 0, 'CelebDFv1_fake': 1, 'CelebDFv2_real': 0, 'CelebDFv2_fake': 1, 'DFDCP_Real': 0, 'DFDCP_FakeA': 1, 'DFDCP_FakeB': 1, 'DFDC_Fake': 1, 'DFDC_Real': 0, 'DF_fake': 1, 'DF_real': 0, 'UADFV_Fake': 1, 'UADFV_Real': 0, 'roop_Real': 0, 'roop_Fake': 1}
+local_rank: 0
+ddp: True
+
+2025-01-28 02:32:07,590 - INFO - Added key: store_based_barrier_key:1 to store for rank: 0
+2025-01-28 02:32:07,682 - INFO - Save log to ./logs/training/sbi_2025-01-28-02-32-07
+2025-01-28 02:32:07,683 - INFO - --------------- Configuration ---------------
+2025-01-28 02:32:07,683 - INFO - Parameters: 
+log_dir: ./logs/training/
+pretrained: /data/home/zhiyuanyan/DeepfakeBench/training/pretrained/xception-b5690688.pth
+model_name: sbi
+backbone_name: efficientnetb4
+backbone_config: {'mode': 'original', 'num_classes': 3, 'inc': 3, 'dropout': False, 'pretrained': True}
+all_dataset: ['FaceForensics++', 'FF-F2F', 'FF-DF', 'FF-FS', 'FF-NT', 'FaceShifter', 'DeepFakeDetection', 'Celeb-DF-v1', 'Celeb-DF-v2', 'DFDCP', 'DFDC', 'DeeperForensics-1.0', 'UADFV']
+train_dataset: ['FaceForensics++']
+test_dataset: ['Celeb-DF-v2', 'roop', 'FaceShifter']
+dataset_type: blend
+compression: c23
+train_batchSize: 24
+test_batchSize: 32
+workers: 8
+frame_num: {'train': 8, 'test': 32}
+resolution: 256
+with_mask: False
+with_landmark: True
+save_ckpt: False
+save_feat: False
+use_data_augmentation: False
+data_aug: {'flip_prob': 0.5, 'rotate_prob': 0.5, 'rotate_limit': [-10, 10], 'blur_prob': 0.5, 'blur_limit': [3, 7], 'brightness_prob': 0.5, 'brightness_limit': [-0.1, 0.1], 'contrast_limit': [-0.1, 0.1], 'quality_lower': 40, 'quality_upper': 100}
+mean: [0.485, 0.456, 0.406]
+std: [0.229, 0.224, 0.225]
+optimizer: {'type': 'adam', 'adam': {'lr': 0.0002, 'beta1': 0.9, 'beta2': 0.999, 'eps': 1e-08, 'weight_decay': 0.0005, 'amsgrad': False}, 'sgd': {'lr': 0.0002, 'momentum': 0.9, 'weight_decay': 0.0005}, 'sam': {'lr': 0.001, 'momentum': 0.9}}
+lr_scheduler: step
+lr_step: 3
+lr_gamma: 0.4
+nEpochs: 50
+start_epoch: 0
+save_epoch: 1
+rec_iter: 100
+logdir: ./logs
+manualSeed: 1024
+loss_func: cross_entropy
+losstype: None
+metric_scoring: auc
+cuda: True
+cudnn: True
+mode: train
+lmdb: False
+dry_run: False
+rgb_dir: datasets/rgb
+lmdb_dir: datasets/lmdb
+dataset_json_folder: ./preprocessing/dataset_json
+SWA: False
+save_avg: True
+label_dict: {'DFD_fake': 1, 'DFD_real': 0, 'FF-SH': 1, 'FF-F2F': 1, 'FF-DF': 1, 'FF-FS': 1, 'FF-NT': 1, 'FF-FH': 1, 'FF-real': 0, 'CelebDFv1_real': 0, 'CelebDFv1_fake': 1, 'CelebDFv2_real': 0, 'CelebDFv2_fake': 1, 'DFDCP_Real': 0, 'DFDCP_FakeA': 1, 'DFDCP_FakeB': 1, 'DFDC_Fake': 1, 'DFDC_Real': 0, 'DF_fake': 1, 'DF_real': 0, 'UADFV_Fake': 1, 'UADFV_Real': 0, 'roop_Real': 0, 'roop_Fake': 1}
+local_rank: 2
+ddp: True
+
+2025-01-28 02:32:07,684 - INFO - Added key: store_based_barrier_key:1 to store for rank: 2
+2025-01-28 02:32:07,788 - INFO - Save log to ./logs/training/sbi_2025-01-28-02-32-07
+2025-01-28 02:32:07,788 - INFO - --------------- Configuration ---------------
+2025-01-28 02:32:07,788 - INFO - Parameters: 
+log_dir: ./logs/training/
+pretrained: /data/home/zhiyuanyan/DeepfakeBench/training/pretrained/xception-b5690688.pth
+model_name: sbi
+backbone_name: efficientnetb4
+backbone_config: {'mode': 'original', 'num_classes': 3, 'inc': 3, 'dropout': False, 'pretrained': True}
+all_dataset: ['FaceForensics++', 'FF-F2F', 'FF-DF', 'FF-FS', 'FF-NT', 'FaceShifter', 'DeepFakeDetection', 'Celeb-DF-v1', 'Celeb-DF-v2', 'DFDCP', 'DFDC', 'DeeperForensics-1.0', 'UADFV']
+train_dataset: ['FaceForensics++']
+test_dataset: ['Celeb-DF-v2', 'roop', 'FaceShifter']
+dataset_type: blend
+compression: c23
+train_batchSize: 24
+test_batchSize: 32
+workers: 8
+frame_num: {'train': 8, 'test': 32}
+resolution: 256
+with_mask: False
+with_landmark: True
+save_ckpt: False
+save_feat: False
+use_data_augmentation: False
+data_aug: {'flip_prob': 0.5, 'rotate_prob': 0.5, 'rotate_limit': [-10, 10], 'blur_prob': 0.5, 'blur_limit': [3, 7], 'brightness_prob': 0.5, 'brightness_limit': [-0.1, 0.1], 'contrast_limit': [-0.1, 0.1], 'quality_lower': 40, 'quality_upper': 100}
+mean: [0.485, 0.456, 0.406]
+std: [0.229, 0.224, 0.225]
+optimizer: {'type': 'adam', 'adam': {'lr': 0.0002, 'beta1': 0.9, 'beta2': 0.999, 'eps': 1e-08, 'weight_decay': 0.0005, 'amsgrad': False}, 'sgd': {'lr': 0.0002, 'momentum': 0.9, 'weight_decay': 0.0005}, 'sam': {'lr': 0.001, 'momentum': 0.9}}
+lr_scheduler: step
+lr_step: 3
+lr_gamma: 0.4
+nEpochs: 50
+start_epoch: 0
+save_epoch: 1
+rec_iter: 100
+logdir: ./logs
+manualSeed: 1024
+loss_func: cross_entropy
+losstype: None
+metric_scoring: auc
+cuda: True
+cudnn: True
+mode: train
+lmdb: False
+dry_run: False
+rgb_dir: datasets/rgb
+lmdb_dir: datasets/lmdb
+dataset_json_folder: ./preprocessing/dataset_json
+SWA: False
+save_avg: True
+label_dict: {'DFD_fake': 1, 'DFD_real': 0, 'FF-SH': 1, 'FF-F2F': 1, 'FF-DF': 1, 'FF-FS': 1, 'FF-NT': 1, 'FF-FH': 1, 'FF-real': 0, 'CelebDFv1_real': 0, 'CelebDFv1_fake': 1, 'CelebDFv2_real': 0, 'CelebDFv2_fake': 1, 'DFDCP_Real': 0, 'DFDCP_FakeA': 1, 'DFDCP_FakeB': 1, 'DFDC_Fake': 1, 'DFDC_Real': 0, 'DF_fake': 1, 'DF_real': 0, 'UADFV_Fake': 1, 'UADFV_Real': 0, 'roop_Real': 0, 'roop_Fake': 1}
+local_rank: 3
+ddp: True
+
+2025-01-28 02:32:07,789 - INFO - Added key: store_based_barrier_key:1 to store for rank: 3
+2025-01-28 02:32:07,794 - INFO - Save log to ./logs/training/sbi_2025-01-28-02-32-07
+2025-01-28 02:32:07,794 - INFO - --------------- Configuration ---------------
+2025-01-28 02:32:07,794 - INFO - Parameters: 
+log_dir: ./logs/training/
+pretrained: /data/home/zhiyuanyan/DeepfakeBench/training/pretrained/xception-b5690688.pth
+model_name: sbi
+backbone_name: efficientnetb4
+backbone_config: {'mode': 'original', 'num_classes': 3, 'inc': 3, 'dropout': False, 'pretrained': True}
+all_dataset: ['FaceForensics++', 'FF-F2F', 'FF-DF', 'FF-FS', 'FF-NT', 'FaceShifter', 'DeepFakeDetection', 'Celeb-DF-v1', 'Celeb-DF-v2', 'DFDCP', 'DFDC', 'DeeperForensics-1.0', 'UADFV']
+train_dataset: ['FaceForensics++']
+test_dataset: ['Celeb-DF-v2', 'roop', 'FaceShifter']
+dataset_type: blend
+compression: c23
+train_batchSize: 24
+test_batchSize: 32
+workers: 8
+frame_num: {'train': 8, 'test': 32}
+resolution: 256
+with_mask: False
+with_landmark: True
+save_ckpt: False
+save_feat: False
+use_data_augmentation: False
+data_aug: {'flip_prob': 0.5, 'rotate_prob': 0.5, 'rotate_limit': [-10, 10], 'blur_prob': 0.5, 'blur_limit': [3, 7], 'brightness_prob': 0.5, 'brightness_limit': [-0.1, 0.1], 'contrast_limit': [-0.1, 0.1], 'quality_lower': 40, 'quality_upper': 100}
+mean: [0.485, 0.456, 0.406]
+std: [0.229, 0.224, 0.225]
+optimizer: {'type': 'adam', 'adam': {'lr': 0.0002, 'beta1': 0.9, 'beta2': 0.999, 'eps': 1e-08, 'weight_decay': 0.0005, 'amsgrad': False}, 'sgd': {'lr': 0.0002, 'momentum': 0.9, 'weight_decay': 0.0005}, 'sam': {'lr': 0.001, 'momentum': 0.9}}
+lr_scheduler: step
+lr_step: 3
+lr_gamma: 0.4
+nEpochs: 50
+start_epoch: 0
+save_epoch: 1
+rec_iter: 100
+logdir: ./logs
+manualSeed: 1024
+loss_func: cross_entropy
+losstype: None
+metric_scoring: auc
+cuda: True
+cudnn: True
+mode: train
+lmdb: False
+dry_run: False
+rgb_dir: datasets/rgb
+lmdb_dir: datasets/lmdb
+dataset_json_folder: ./preprocessing/dataset_json
+SWA: False
+save_avg: True
+label_dict: {'DFD_fake': 1, 'DFD_real': 0, 'FF-SH': 1, 'FF-F2F': 1, 'FF-DF': 1, 'FF-FS': 1, 'FF-NT': 1, 'FF-FH': 1, 'FF-real': 0, 'CelebDFv1_real': 0, 'CelebDFv1_fake': 1, 'CelebDFv2_real': 0, 'CelebDFv2_fake': 1, 'DFDCP_Real': 0, 'DFDCP_FakeA': 1, 'DFDCP_FakeB': 1, 'DFDC_Fake': 1, 'DFDC_Real': 0, 'DF_fake': 1, 'DF_real': 0, 'UADFV_Fake': 1, 'UADFV_Real': 0, 'roop_Real': 0, 'roop_Fake': 1}
+local_rank: 1
+ddp: True
+
+2025-01-28 02:32:07,795 - INFO - Added key: store_based_barrier_key:1 to store for rank: 1
+2025-01-28 02:32:07,796 - INFO - Rank 1: Completed store-based barrier for key:store_based_barrier_key:1 with 4 nodes.
+Traceback (most recent call last):
+  File "training/train.py", line 323, in <module>
+    main()
+  File "training/train.py", line 278, in main
+    train_data_loader = prepare_training_data(config)
+  File "training/train.py", line 71, in prepare_training_data
+    train_set = SBIDataset(config, mode='train')
+NameError: name 'SBIDataset' is not defined
+2025-01-28 02:32:07,800 - INFO - Rank 3: Completed store-based barrier for key:store_based_barrier_key:1 with 4 nodes.
+Traceback (most recent call last):
+  File "training/train.py", line 323, in <module>
+    main()
+  File "training/train.py", line 278, in main
+    train_data_loader = prepare_training_data(config)
+  File "training/train.py", line 71, in prepare_training_data
+    train_set = SBIDataset(config, mode='train')
+NameError: name 'SBIDataset' is not defined
+2025-01-28 02:32:07,804 - INFO - Rank 0: Completed store-based barrier for key:store_based_barrier_key:1 with 4 nodes.
+Traceback (most recent call last):
+  File "training/train.py", line 323, in <module>
+    main()
+  File "training/train.py", line 278, in main
+    train_data_loader = prepare_training_data(config)
+  File "training/train.py", line 71, in prepare_training_data
+    train_set = SBIDataset(config, mode='train')
+NameError: name 'SBIDataset' is not defined
+2025-01-28 02:32:07,806 - INFO - Rank 2: Completed store-based barrier for key:store_based_barrier_key:1 with 4 nodes.
+Traceback (most recent call last):
+  File "training/train.py", line 323, in <module>
+    main()
+  File "training/train.py", line 278, in main
+    train_data_loader = prepare_training_data(config)
+  File "training/train.py", line 71, in prepare_training_data
+    train_set = SBIDataset(config, mode='train')
+NameError: name 'SBIDataset' is not defined
+ERROR:torch.distributed.elastic.multiprocessing.api:failed (exitcode: 1) local_rank: 0 (pid: 1533368) of binary: /raid/dtle/deepfake/DeepfakeBench/miniconda3/envs/DeepfakeBench/bin/python3
+Traceback (most recent call last):
+  File "/raid/dtle/deepfake/DeepfakeBench/miniconda3/envs/DeepfakeBench/lib/python3.7/runpy.py", line 193, in _run_module_as_main
+    "__main__", mod_spec)
+  File "/raid/dtle/deepfake/DeepfakeBench/miniconda3/envs/DeepfakeBench/lib/python3.7/runpy.py", line 85, in _run_code
+    exec(code, run_globals)
+  File "/raid/dtle/deepfake/DeepfakeBench/miniconda3/envs/DeepfakeBench/lib/python3.7/site-packages/torch/distributed/launch.py", line 193, in <module>
+    main()
+  File "/raid/dtle/deepfake/DeepfakeBench/miniconda3/envs/DeepfakeBench/lib/python3.7/site-packages/torch/distributed/launch.py", line 189, in main
+    launch(args)
+  File "/raid/dtle/deepfake/DeepfakeBench/miniconda3/envs/DeepfakeBench/lib/python3.7/site-packages/torch/distributed/launch.py", line 174, in launch
+    run(args)
+  File "/raid/dtle/deepfake/DeepfakeBench/miniconda3/envs/DeepfakeBench/lib/python3.7/site-packages/torch/distributed/run.py", line 755, in run
+    )(*cmd_args)
+  File "/raid/dtle/deepfake/DeepfakeBench/miniconda3/envs/DeepfakeBench/lib/python3.7/site-packages/torch/distributed/launcher/api.py", line 131, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/raid/dtle/deepfake/DeepfakeBench/miniconda3/envs/DeepfakeBench/lib/python3.7/site-packages/torch/distributed/launcher/api.py", line 247, in launch_agent
+    failures=result.failures,
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+training/train.py FAILED
+------------------------------------------------------------
+Failures:
+[1]:
+  time      : 2025-01-28_02:32:10
+  host      : koa-dgxa-b8-u11.localdomain
+  rank      : 1 (local_rank: 1)
+  exitcode  : 1 (pid: 1533371)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[2]:
+  time      : 2025-01-28_02:32:10
+  host      : koa-dgxa-b8-u11.localdomain
+  rank      : 2 (local_rank: 2)
+  exitcode  : 1 (pid: 1533372)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[3]:
+  time      : 2025-01-28_02:32:10
+  host      : koa-dgxa-b8-u11.localdomain
+  rank      : 3 (local_rank: 3)
+  exitcode  : 1 (pid: 1533373)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2025-01-28_02:32:10
+  host      : koa-dgxa-b8-u11.localdomain
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 1533368)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================

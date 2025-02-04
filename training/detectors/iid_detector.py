@@ -68,6 +68,7 @@ class IIDDetector(AbstractDetector):
         self.explicit_extractor = iresnet50(False, fp16=False)
         self.explicit_extractor.load_state_dict(torch.load(config['explicit_extractor_pretrained']))
         self.explicit_extractor.cuda().eval()
+        # self.explicit_extractor.cuda().train()
         self.BCE_LOSS = FC_ddp(config['embedding_size'], config['backbone_config']['num_classes']).cuda()
         self.IIE_LOSS = FC_ddp2(config['embedding_size'], 1000, scale=64, margin=0.4, mode='arcface', use_cifp=False,
                        reduction='mean',ddp=config['ddp']).cuda()

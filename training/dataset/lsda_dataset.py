@@ -177,9 +177,9 @@ class LSDADataset(DeepfakeAbstractBaseDataset):
     else:
         data_root = r'./datasets/FaceForensics++'
     data_list = {
-        'test': r'./datasets/FaceForensics++/test.json',
-        'train': r'./datasets/FaceForensics++/train.json',
-        'eval': r'./datasets/FaceForensics++/val.json'
+        'test': r'./datasets/rgb/FaceForensics++/test.json',
+        'train': r'./datasets/rgb/FaceForensics++/train.json', #change later
+        'eval': r'./datasets/rgb/FaceForensics++/val.json'
     }
 
     def __init__(self, config=None, mode='train', with_dataset=['Deepfakes', 'Face2Face', 'FaceSwap', 'NeuralTextures']):
@@ -197,6 +197,8 @@ class LSDADataset(DeepfakeAbstractBaseDataset):
         ])
         self.img_lines = []
         self.config=config
+        print("dataset_json_folder: ", self.config['dataset_json_folder'])
+        print("data_list: ", self.data_list[mode])
         with open(self.config['dataset_json_folder']+'/FaceForensics++.json', 'r') as fd:
             self.img_json = json.load(fd)
         with open(self.data_list[mode], 'r') as fd:
@@ -230,6 +232,7 @@ class LSDADataset(DeepfakeAbstractBaseDataset):
         # 2*360 (groups) * 1+len(with_dataset) (videos in each group) * self.frames[mode] (frames in each video)
         assert len(img_lines) == 2*len(data) * (1 + len(with_dataset)) * config['frame_num'][mode], "to match our custom sampler, the length should be 2*360*(1+len(with_dataset))*frames[mode]"
         self.img_lines.extend(img_lines)
+        print("img_lines: ", len(self.img_lines))
 
 
     def get_ids_from_path(self, path):
@@ -253,6 +256,7 @@ class LSDADataset(DeepfakeAbstractBaseDataset):
         return img
 
     def __getitem__(self, index):
+        # print("index=", index)
         name, idx, label, mode = self.img_lines[index] #这个sampler的目的是不要取重复video的图。
         label = int(label)  # specific fake label from 1-4
 
@@ -290,7 +294,23 @@ class LSDADataset(DeepfakeAbstractBaseDataset):
 
         return (img, label)
 
+    # def __getitem__(self, index):
+    #     name, idx, label, mode = self.img_lines[index] 
+    #     label = int(label)  # specific fake label from 1-4
 
+    
+    #     try:
+
+    #         img = self.load_image(name, idx)
+
+    #     except Exception as e:
+
+
+    #         random_idx = random.randint(0, len(self.img_lines)-1)
+    #         while self.img_lines[random_idx][0] != name:
+    #             random_idx = random.randint(0, len(self.img_lines) - 1)
+    #             return self.__getitem__(random_idx)
+    #         print(f'Error loading image {name} at index {idx} due to the loading error. Try another one at index {random_idx}')
 
     def __len__(self):
         return len(self.img_lines)

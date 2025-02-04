@@ -2,14 +2,16 @@
 log_dir: /data/home/zhiyuanyan/logs/benchv2/sbi_v3
 
 # model setting
-pretrained: /data/home/zhiyuanyan/DeepfakeBench/training/pretrained/xception-b5690688.pth   # path to a pre-trained model, if using one
+# pretrained: ./training/pretrained/xception-b5690688.pth   # path to a pre-trained model, if using one
+pretrained: ./training/pretrained/efficientnet-b4-6ed6700e.pth   # path to a pre-trained model, if using one
 model_name: sbi   # model name
 backbone_name: efficientnetb4  # backbone name
+# backbone_name: xception  # backbone name
 
 #backbone setting
 backbone_config:
   mode: original
-  num_classes: 3
+  num_classes: 2
   inc: 3
   dropout: false
   pretrained: true
@@ -21,11 +23,12 @@ test_dataset: [Celeb-DF-v2, roop, FaceShifter]
 dataset_type: blend
 
 compression: c23  # compression-level for videos
-train_batchSize: 24   # training batch size
+train_batchSize: 32   # training batch size, 24 initially
 test_batchSize: 32   # test batch size
 workers: 8   # number of data loading workers
 frame_num: {'train': 8, 'test': 32}   # number of frames to use per video in training and testing
-resolution: 256   # resolution of output image to network
+# resolution: 256   # resolution of output image to network
+resolution: 380   # this fail 
 with_mask: false   # whether to include mask information in the input
 with_landmark: true   # whether to include facial landmark information in the input
 save_ckpt: false   # whether to save checkpoint
@@ -33,7 +36,7 @@ save_feat: false   # whether to save features
 
 
 # data augmentation
-use_data_augmentation: false  # Add this flag to enable/disable data augmentation
+use_data_augmentation: False  # Add this flag to enable/disable data augmentation
 data_aug:
   flip_prob: 0.5
   rotate_prob: 0.5
@@ -53,9 +56,9 @@ std: [0.229, 0.224, 0.225]
 # optimizer config
 optimizer:
   # choose between 'adam' and 'sgd'
-  type: adam
+  type: sam
   adam:
-    lr: 0.0002  # learning rate
+    lr: 0.0002  # learning rate, initially 0.0002
     beta1: 0.9  # beta1 for Adam optimizer
     beta2: 0.999 # beta2 for Adam optimizer
     eps: 0.00000001  # epsilon for Adam optimizer
@@ -66,14 +69,15 @@ optimizer:
     momentum: 0.9  # momentum for SGD optimizer
     weight_decay: 0.0005  # weight decay for regularization
   sam:
-    lr: 0.001  # learning rate
+    lr: 0.001  # learning rate, initailly 0.001
     momentum: 0.9  # momentum for SGD optimizer
 
 # training config
+# lr_scheduler: linear   # change to step later
 lr_scheduler: step   # learning rate scheduler step
 lr_step: 3
 lr_gamma: 0.4   # learning rate scheduler
-nEpochs: 50   # number of epochs to train for
+nEpochs: 100   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
 rec_iter: 100   # interval iterations for recording

@@ -6,7 +6,8 @@ lmdb_dir: 'I:\transform_2_lmdb'
 
 # model setting
 pretrained: ./training/pretrained/xception-b5690688.pth #./training/pretrained/xception-b5690688.pth   # path to a pre-trained model, if using one
-explicit_extractor_pretrained: ./training/pretrained/backbone.pth
+# explicit_extractor_pretrained: ./training/pretrained/backbone.pth
+explicit_extractor_pretrained: ./training/pretrained/iresnet50.pth
 model_name: iid   # model name
 backbone_name: xception  # backbone name
 restore_ckpt: 'None'

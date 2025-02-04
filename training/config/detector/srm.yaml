@@ -1,8 +1,8 @@
 # log dir 
-log_dir: /data/home/zhiyuanyan/logs/testing_bench
+log_dir: ./logs/testing_bench
 
 # model setting
-pretrained: /data/home/zhiyuanyan/DeepfakeBench/training/pretrained/xception-b5690688.pth   # path to a pre-trained model, if using one
+pretrained: ./training/pretrained/xception-b5690688.pth   # path to a pre-trained model, if using one
 model_name: srm   # model name
 backbone_name: xception  # backbone name
 
@@ -31,7 +31,7 @@ save_feat: true   # whether to save features
 
 
 # data augmentation
-use_data_augmentation: false  # Add this flag to enable/disable data augmentation
+use_data_augmentation: true  # Add this flag to enable/disable data augmentation
 data_aug:
   flip_prob: 0.5
   rotate_prob: 0.5

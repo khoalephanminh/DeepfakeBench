@@ -9,6 +9,7 @@ sys.path.append(project_root_dir)
 from metrics.registry import LOSSFUNC
 
 from .cross_entropy_loss import CrossEntropyLoss
+from .soft_cross_entropy_loss import SoftCrossEntropyLoss
 from .consistency_loss import ConsistencyCos
 from .capsule_loss import CapsuleLoss
 from .bce_loss import BCELoss

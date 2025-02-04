@@ -30,6 +30,7 @@ from torchvision import transforms as T
 import albumentations as A
 
 from .albu import IsotropicResize
+from .fsbi_utils import get_dwt
 
 FFpp_pool=['FaceForensics++','FaceShifter','DeepFakeDetection','FF-DF','FF-F2F','FF-FS','FF-NT']#
 
@@ -107,10 +108,12 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
             'image': self.image_list, 
             'label': self.label_list, 
         }
+        print("len=", len(self.image_list), len(self.label_list))
         
         self.transform = self.init_data_aug_method()
         
     def init_data_aug_method(self):
+        print("withlm=", self.config['with_landmark'])
         trans = A.Compose([           
             A.HorizontalFlip(p=self.config['data_aug']['flip_prob']),
             A.Rotate(limit=self.config['data_aug']['rotate_limit'], p=self.config['data_aug']['rotate_prob']),
@@ -118,8 +121,9 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
             A.OneOf([                
                 IsotropicResize(max_side=self.config['resolution'], interpolation_down=cv2.INTER_AREA, interpolation_up=cv2.INTER_CUBIC),
                 IsotropicResize(max_side=self.config['resolution'], interpolation_down=cv2.INTER_AREA, interpolation_up=cv2.INTER_LINEAR),
-                IsotropicResize(max_side=self.config['resolution'], interpolation_down=cv2.INTER_LINEAR, interpolation_up=cv2.INTER_LINEAR),
-            ], p = 0 if self.config['with_landmark'] else 1),
+                IsotropicResize(max_side=self.config['resolution'], interpolation_down=cv2.INTER_LINEAR, interpolation_up=cv2.INTER_LINEAR)
+            ], p = 0 if self.config['with_landmark']  else 1),
+            
             A.OneOf([
                 A.RandomBrightnessContrast(brightness_limit=self.config['data_aug']['brightness_limit'], contrast_limit=self.config['data_aug']['contrast_limit']),
                 A.FancyPCA(),
@@ -159,6 +163,7 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
         video_name_list = []
 
         # Try to get the dataset information from the JSON file
+        print("json=", self.config['dataset_json_folder'])
         if not os.path.exists(self.config['dataset_json_folder']):
             self.config['dataset_json_folder'] = self.config['dataset_json_folder'].replace('/Youtu_Pangu_Security_Public', '/Youtu_Pangu_Security/public')
         try:
@@ -189,6 +194,7 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
         # Get the information for the current dataset
         for label in dataset_info[dataset_name]:
             sub_dataset_info = dataset_info[dataset_name][label][self.mode]
+            # sub_dataset_info = dataset_info[dataset_name][label]['test']
             # Special case for FaceForensics++ and DeepFakeDetection, choose the compression type
             if cp == None and dataset_name in ['FF-DF', 'FF-F2F', 'FF-FS', 'FF-NT', 'FaceForensics++','DeepFakeDetection','FaceShifter']:
                 sub_dataset_info = sub_dataset_info[self.compression]
@@ -214,6 +220,11 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
                 # Consider the case when the actual number of frames (e.g., 270) is larger than the specified (i.e., self.frame_num=32)
                 # In this case, we select self.frame_num frames from the original 270 frames
                 total_frames = len(frame_paths)
+                if total_frames < 32 and self.mode == 'train':  # Replace MINIMUM_FRAME_THRESHOLD with your desired minimum number of frames
+                    if total_frames < 10:
+                        print(f"Folder {video_info['frames']} contains only {total_frames} images.")
+                    continue  # Skip this folder if it doesn't have enough images
+
                 if self.frame_num < total_frames:
                     total_frames = self.frame_num
                     if self.video_level:
@@ -276,6 +287,8 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
         shuffled = list(zip(label_list, frame_path_list, video_name_list))
         random.shuffle(shuffled)
         label_list, frame_path_list, video_name_list = zip(*shuffled)
+
+        print("len 1=", len(frame_path_list), len(label_list))
         
         return frame_path_list, label_list, video_name_list
 
@@ -296,7 +309,8 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
         size = self.config['resolution'] # if self.mode == "train" else self.config['resolution']
         if not self.lmdb:
             if not file_path[0] == '.':
-                file_path =  f'./{self.config["rgb_dir"]}\\'+file_path
+                # file_path =  f'./{self.config["rgb_dir"]}\\'+file_path
+                file_path = os.path.join(f'./{self.config["rgb_dir"]}', file_path).replace('\\', '/')
             assert os.path.exists(file_path), f"{file_path} does not exist"
             img = cv2.imread(file_path)
             if img is None:
@@ -333,7 +347,8 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
             return np.zeros((size, size, 1))
         if not self.lmdb:
             if not file_path[0] == '.':
-                file_path =  f'./{self.config["rgb_dir"]}\\'+file_path
+                # file_path =  f'./{self.config["rgb_dir"]}\\'+file_path
+                file_path = os.path.join(f'./{self.config["rgb_dir"]}', file_path).replace('\\', '/')
             if os.path.exists(file_path):
                 mask = cv2.imread(file_path, 0)
                 if mask is None:
@@ -374,7 +389,8 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
             return np.zeros((81, 2))
         if not self.lmdb:
             if not file_path[0] == '.':
-                file_path =  f'./{self.config["rgb_dir"]}\\'+file_path
+                # file_path =  f'./{self.config["rgb_dir"]}\\'+file_path
+                file_path = os.path.join(f'./{self.config["rgb_dir"]}', file_path).replace('\\', '/')
             if os.path.exists(file_path):
                 landmark = np.load(file_path)
             else:
@@ -510,14 +526,20 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
             else:
                 image_trans, landmarks_trans, mask_trans = deepcopy(image), deepcopy(landmarks), deepcopy(mask)
             
+            # Apply DWT if model_name is FSBI
+            if self.config['model_name'] == 'fsbi':
+                image_size = (self.config['resolution'], self.config['resolution'])
+                image_trans = get_dwt(image_trans, image_size)
 
             # To tensor and normalize
             if not no_norm:
                 image_trans = self.normalize(self.to_tensor(image_trans))
                 if self.config['with_landmark']:
-                    landmarks_trans = torch.from_numpy(landmarks)
+                    # landmarks_trans = torch.from_numpy(landmarks)
+                    landmarks_trans = torch.from_numpy(landmarks.astype(np.float32))
                 if self.config['with_mask']:
                     mask_trans = torch.from_numpy(mask_trans)
+                    # mask_trans = torch.from_numpy(mask_trans.astype(np.uint8))
 
             image_tensors.append(image_trans)
             landmark_tensors.append(landmarks_trans)

@@ -69,6 +69,8 @@ def prepare_training_data(config):
             train_set = FWABlendDataset(config)
         elif config['model_name'] == 'sbi':
             train_set = SBIDataset(config, mode='train')
+        elif config['model_name'] == 'fsbi':
+            train_set = FSBIDataset(config, mode='train')
         elif config['model_name'] == 'lsda':
             train_set = LSDADataset(config, mode='train')
         else:
@@ -208,7 +210,8 @@ def choose_scheduler(config, optimizer):
         scheduler = LinearDecayLR(
             optimizer,
             config['nEpochs'],
-            int(config['nEpochs']/4),
+            # int(config['nEpochs']/4),
+            int(config['nEpochs']*0.75), # <- 0.75 instead of /4
         )
     else:
         raise NotImplementedError('Scheduler {} is not implemented'.format(config['lr_scheduler']))
@@ -242,12 +245,14 @@ def main():
     config['save_ckpt'] = args.save_ckpt
     config['save_feat'] = args.save_feat
     if config['lmdb']:
-        config['dataset_json_folder'] = 'preprocessing/dataset_json_v3'
+        # config['dataset_json_folder'] = 'preprocessing/dataset_json_v3'
+        config['dataset_json_folder'] = 'preprocessing/dataset_json'
     # create logger
     timenow=datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     task_str = f"_{config['task_target']}" if config.get('task_target', None) is not None else ""
     logger_path =  os.path.join(
                 config['log_dir'],
+                config['model_name'],
                 config['model_name'] + task_str + '_' + timenow
             )
     os.makedirs(logger_path, exist_ok=True)

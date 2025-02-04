@@ -115,6 +115,7 @@ class SBIDetector(AbstractDetector):
         prob = torch.softmax(pred, dim=1)[:, 1]
         # build the prediction dict for each output
         pred_dict = {'cls': pred, 'prob': prob, 'feat': features}
+        # print("datadict_name=", data_dict)
         if inference:
             self.prob.append(
                 pred_dict['prob']
@@ -137,5 +138,5 @@ class SBIDetector(AbstractDetector):
             self.total += data_dict['label'].size(0)
 
             # Save video names for computing video-level AUC
-            self.video_names.extend(data_dict['name'])
+            # self.video_names.extend(data_dict['name'])
         return pred_dict

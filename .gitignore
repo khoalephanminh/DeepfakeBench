@@ -5,3 +5,9 @@
 *.pth
 *.pt
 *.dat
+
+logs/
+miniconda3/
+datasets/lmdb/
+datasets/rgb/
+tmp_img*/

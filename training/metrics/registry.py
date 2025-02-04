@@ -5,6 +5,7 @@ class Registry(object):
     def register_module(self, module_name=None):
         def _register(cls):
             name = module_name
+            print("name=", name)
             if module_name is None:
                 name = cls.__name__
             self.data[name] = cls
