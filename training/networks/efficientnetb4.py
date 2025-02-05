@@ -53,7 +53,7 @@ class EfficientNetB4(nn.Module):
                 nn.ReLU(inplace=True),
             )
 
-        print("efficientnet=", self.efficientnet)
+        # print("efficientnet=", self.efficientnet)
 
     def block_part1(self,x):
         x = self.efficientnet._swish(self.efficientnet._bn0(self.efficientnet._conv_stem(x)))

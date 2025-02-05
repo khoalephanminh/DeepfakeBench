@@ -29,7 +29,7 @@ train_batchSize: 24  # training batch size
 test_batchSize: 32   # test batch size
 workers: 8   # number of data loading workers
 frame_num: {'train': 8, 'test': 32}   # number of frames to use per video in training and testing
-resolution: 256   # resolution of output image to network
+resolution: 256   # initially 256
 with_mask: false   # whether to include mask information in the input
 with_landmark: false   # whether to include facial landmark information in the input
 # use_phase_spe: None
@@ -141,7 +141,7 @@ optimizer:
 lr_scheduler:   # learning rate scheduler step
 lr_step: 3
 lr_gamma: 0.4   # learning rate scheduler
-nEpochs: 20   # number of epochs to train for
+nEpochs: 10   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
 rec_iter: 100   # interval iterations for recording

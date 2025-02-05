@@ -5,7 +5,7 @@ backbone_name: vision_transformer
 
 #backbone setting
 backbone_config:
-  model_type: vit_b_32 # [vit_b_16, vit_b_32, vit_l_16, vit_l_32, vit_h_14] if backbone_name is vision_transformer
+  model_type: vit_b_16 # [vit_b_16, vit_b_32, vit_l_16, vit_l_32, vit_h_14] if backbone_name is vision_transformer
   mode: original
   vit_resolution: 224
   num_classes: 2
@@ -70,7 +70,8 @@ optimizer:
     momentum: 0.9  # momentum for SGD optimizer
 
 # training config
-lr_scheduler: step   # learning rate scheduler step
+lr_scheduler: null
+#lr_scheduler: step   # learning rate scheduler step
 lr_step: 3
 lr_gamma: 0.4   # learning rate scheduler
 lr_T_max: 4

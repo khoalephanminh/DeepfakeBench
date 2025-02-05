@@ -11,3 +11,5 @@ miniconda3/
 datasets/lmdb/
 datasets/rgb/
 tmp_img*/
+Miniconda3-latest-Linux-x86_64.sh
+training/pretrained/author_sbi.tar

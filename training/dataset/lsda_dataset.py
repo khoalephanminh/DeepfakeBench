@@ -178,7 +178,7 @@ class LSDADataset(DeepfakeAbstractBaseDataset):
         data_root = r'./datasets/FaceForensics++'
     data_list = {
         'test': r'./datasets/rgb/FaceForensics++/test.json',
-        'train': r'./datasets/rgb/FaceForensics++/train.json', #change later
+        'train': r'./datasets/rgb/FaceForensics++/train.json', 
         'eval': r'./datasets/rgb/FaceForensics++/val.json'
     }
 
@@ -228,11 +228,12 @@ class LSDADataset(DeepfakeAbstractBaseDataset):
                     for i in range(0, config['frame_num'][mode], step):
                         img_lines.append(
                             ('{}/{}_{}'.format(fake_d, r2, r1), i, self.fake_dict[fake_d], mode))
+                # print("image_lines=", img_lines)
 
         # 2*360 (groups) * 1+len(with_dataset) (videos in each group) * self.frames[mode] (frames in each video)
         assert len(img_lines) == 2*len(data) * (1 + len(with_dataset)) * config['frame_num'][mode], "to match our custom sampler, the length should be 2*360*(1+len(with_dataset))*frames[mode]"
         self.img_lines.extend(img_lines)
-        print("img_lines: ", len(self.img_lines))
+        # print("img_lines: ", len(self.img_lines))
 
 
     def get_ids_from_path(self, path):
@@ -247,6 +248,7 @@ class LSDADataset(DeepfakeAbstractBaseDataset):
 
     def load_image(self, name, idx):
         instance_type, video_name = name.split('/')
+        # print("name, idx, ins, video_name=", name, idx, instance_type, video_name)
         #其实并没有完全对应，而只是保证在同一video的目标时间区间内的一帧
         all_frames = self.img_json[self.data_root.split(os.path.sep)[-1]][self.transfer_dict[instance_type]]['train']['c23'][video_name]['frames']
         img_path = all_frames[idx]
@@ -277,7 +279,8 @@ class LSDADataset(DeepfakeAbstractBaseDataset):
             else:
                 new_index = index + random.choice([-1,1]) # 通过随机防止死递归
             print(f'Error loading image {name} at index {idx} due to the loading error. Try another one at index {new_index}')
-            return self.__getitem__(new_index)
+            # return self.__getitem__(new_index)
+            return self.__getitem__(35042)
 
             
         if self.mode=='train':

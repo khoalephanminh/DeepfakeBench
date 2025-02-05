@@ -1,10 +1,10 @@
 # Just a note: https://github.com/lucidrains/vit-pytorch
+# backup
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-#from vit_pytorch import ViT
-import timm
+import torchvision
 from typing import Union
 from metrics.registry import BACKBONE
 import os
@@ -24,16 +24,22 @@ class VisionTransformer(nn.Module):
         assert self.model_type in ['vit_b_16', 'vit_b_32', 'vit_l_16', 'vit_l_32', 'vit_h_14']
 
         # Load the ViT model without pre-trained weights
-        self.vit = timm.create_model(
-            'vit_base_patch16_224', pretrained=True, num_classes=self.num_classes
-        )
+        if vit_config["pretrained"]:
+            self.vit = getattr(torchvision.models, self.model_type)(image_size=vit_config["vit_resolution"])
+        else:
+            self.vit = getattr(torchvision.models, self.model_type)(image_size=vit_config["vit_resolution"], weights="DEFAULT")
+
         # Remove the last layer (the classifier)
+        self.vit.heads = nn.Identity()
+
+        ## Initialize the last_layer layer
+        self.last_layer = nn.Linear(768, self.num_classes)
 
         for param in self.vit.parameters():
             param.requires_grad = True
 
-        ## Initialize the last_layer layer
-        self.last_layer = nn.Identity()
+        for param in self.last_layer.parameters():
+            param.requires_grad = True
 
     def features(self, x):
         # Extract features

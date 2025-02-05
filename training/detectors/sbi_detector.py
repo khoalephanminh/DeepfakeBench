@@ -63,6 +63,7 @@ class SBIDetector(AbstractDetector):
         self.correct, self.total = 0, 0
 
     def build_backbone(self, config):
+        # print("hehe", config['pretrained'])
         # prepare the backbone
         backbone_class = BACKBONE[config['backbone_name']]
         model_config = config['backbone_config']
@@ -72,7 +73,7 @@ class SBIDetector(AbstractDetector):
         for name, weights in state_dict.items():
             if 'pointwise' in name:
                 state_dict[name] = weights.unsqueeze(-1).unsqueeze(-1)
-        state_dict = {k:v for k, v in state_dict.items() if 'fc' not in k}
+        state_dict = {k:v for k, v in state_dict.items() if 'fc' not in k} # uncomment later
         backbone.load_state_dict(state_dict, False)
         logger.info('Load pretrained model successfully!')
         return backbone
