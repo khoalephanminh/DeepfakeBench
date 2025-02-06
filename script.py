@@ -8,7 +8,7 @@ parser.add_argument("--detector_path", type=str, default="./training/config/dete
 parser.add_argument("--train_dataset", type=str, default="FaceForensics++", help="train dataset")
 parser.add_argument("--test_dataset", type=str, default="Celeb-DF-v2", help="test dataset")
 args = parser.parse_args()
-# CUDA_VISIBLE_DEVICES=3 python script.py --times 10
+# CUDA_VISIBLE_DEVICES=2 python script.py --times 5
 
 if __name__ == '__main__':
     for i in range(args.times):

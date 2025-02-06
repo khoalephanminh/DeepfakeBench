@@ -251,7 +251,7 @@ class Xception(nn.Module):
 
         return x
      
-    def features(self, input, show_gradcam=True):
+    def features(self, input):
         x = self.fea_part1(input)    
 
         x = self.fea_part2(x)
@@ -262,9 +262,6 @@ class Xception(nn.Module):
 
         if self.mode == 'adjust_channel':
             x = self.adjust_channel(x)
-
-        # if show_gradcam:
-        #     self.visualize_gradcam(input)
         
         return x
 
@@ -289,7 +286,6 @@ class Xception(nn.Module):
     def forward(self, input, show_gradcam=True):
         x = self.features(input)
         out = self.classifier(x)
-
         if show_gradcam:
             return out
         else:  
@@ -298,7 +294,7 @@ class Xception(nn.Module):
 
     def visualize_gradcam(self, input_tensor, raw_id=None):
         # Ensure the model is in evaluation mode
-        output_folder = './gradcam_xception_1'
+        output_folder = './gradcam_xception_32'
         os.makedirs(output_folder, exist_ok=True)
         self.eval()
 
@@ -327,21 +323,3 @@ class Xception(nn.Module):
             output_path = os.path.join(output_folder, f'gradcam_{raw_id}_{0}.png')
             plt.imsave(output_path, visualization)
             print(f"Grad-CAM visualization saved to {output_path}")
-
-        # # Iterate over the batch and save each Grad-CAM visualization
-        # for i in range(input_tensor.size(0)):
-        #     # Extract the single image tensor and add a batch dimension
-        #     single_image_tensor = input_tensor[i].unsqueeze(0)
-
-        #     # Generate Grad-CAM
-        #     grayscale_cam = cam(input_tensor=single_image_tensor, targets=None)
-
-        #     # Convert grayscale CAM to heatmap
-        #     input_image = single_image_tensor.cpu().numpy().transpose(0, 2, 3, 1)[0]
-        #     input_image = (input_image - input_image.min()) / (input_image.max() - input_image.min())
-        #     visualization = show_cam_on_image(input_image, grayscale_cam[0], use_rgb=True)
-
-        #     # Save the Grad-CAM heatmap to the output folder
-        #     output_path = os.path.join(output_folder, f'gradcam_{raw_id}_{i}.png')
-        #     plt.imsave(output_path, visualization)
-        #     print(f"Grad-CAM visualization saved to {output_path}")

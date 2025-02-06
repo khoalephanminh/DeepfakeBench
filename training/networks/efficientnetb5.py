@@ -23,14 +23,14 @@ class EfficientNetB5(nn.Module):
         self.dropout = efficientnetb5_config["dropout"]
         self.mode = efficientnetb5_config["mode"]
 
-        # Load the EfficientNet-B5 model without pre-trained weights
-        if efficientnetb5_config['pretrained']:
-            self.efficientnet = EfficientNet.from_pretrained('efficientnet-b5',weights_path=efficientnetb5_config['pretrained'])  # FIXME: load the pretrained weights from online
-        # self.efficientnet = EfficientNet.from_name('efficientnet-b5')
-        else:
-            self.efficientnet = EfficientNet.from_name('efficientnet-b5')
+        # Load the EfficientNet-B5 model with local pre-trained weights
+        self.efficientnet = EfficientNet.from_name('efficientnet-b5')
+        pretrained_path = efficientnetb5_config.get("pretrained_path", "")
+        if os.path.exists(pretrained_path):
+            self.efficientnet.load_state_dict(torch.load(pretrained_path))
+
         # Modify the first convolutional layer to accept input tensors with 'inc' channels
-        self.efficientnet._conv_stem = nn.Conv2d(inc, 48, kernel_size=3, stride=2, bias=False)
+        #self.efficientnet._conv_stem = nn.Conv2d(inc, 48, kernel_size=3, stride=2, bias=False)
 
         # Remove the last layer (the classifier) from the EfficientNet-B5 model
         self.efficientnet._fc = nn.Identity()
@@ -44,38 +44,10 @@ class EfficientNetB5(nn.Module):
 
         if self.mode == 'adjust_channel':
             self.adjust_channel = nn.Sequential(
-                nn.Conv2d(1792, 512, 1, 1),
+                nn.Conv2d(2048, 512, 1, 1),
                 nn.BatchNorm2d(512),
                 nn.ReLU(inplace=True),
             )
-
-    def block_part1(self,x):
-        x = self.efficientnet._swish(self.efficientnet._bn0(self.efficientnet._conv_stem(x)))
-        # x = self.efficientnet._blocks[0:10](x)
-        for idx, block in enumerate(self.efficientnet._blocks[:10]):
-            drop_connect_rate = self.efficientnet._global_params.drop_connect_rate
-            if drop_connect_rate:
-                drop_connect_rate *= float(idx+0) / len(self.efficientnet._blocks)  # scale drop connect_rate
-            x = block(x, drop_connect_rate=drop_connect_rate)
-        return x
-
-    def block_part2(self,x):
-        for idx, block in enumerate(self.efficientnet._blocks[10:22]):
-            drop_connect_rate = self.efficientnet._global_params.drop_connect_rate
-            if drop_connect_rate:
-                drop_connect_rate *= float(idx+10)  / len(self.efficientnet._blocks)  # scale drop connect_rate
-            x = block(x, drop_connect_rate=drop_connect_rate)
-        return x
-
-    def block_part3(self,x):
-        for idx, block in enumerate(self.efficientnet._blocks[22:]):
-            drop_connect_rate = self.efficientnet._global_params.drop_connect_rate
-            if drop_connect_rate:
-                drop_connect_rate *= float(idx+22)  / len(self.efficientnet._blocks)  # scale drop connect_rate
-            x = block(x, drop_connect_rate=drop_connect_rate)
-        x = self.efficientnet._swish(self.efficientnet._bn1(self.efficientnet._conv_head(x)))
-        return x
-
 
     def features(self, x):
         # Extract features from the EfficientNet-B5 model

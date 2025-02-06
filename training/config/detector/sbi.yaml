@@ -3,7 +3,6 @@ log_dir: /data/home/zhiyuanyan/logs/benchv2/sbi_v3
 
 # model setting
 # pretrained: ./training/pretrained/xception-b5690688.pth   # path to a pre-trained model, if using one
-pretrained: ./training/pretrained/efficientnet-b4-6ed6700e.pth   # path to a pre-trained model, if using one
 model_name: sbi   # model name
 backbone_name: efficientnetb4  # backbone name
 # backbone_name: xception  # backbone name
@@ -14,7 +13,8 @@ backbone_config:
   num_classes: 2
   inc: 3
   dropout: false
-  pretrained: true
+  # pretrained: true
+  pretrained_path: ./training/pretrained/efficientnet-b4-6ed6700e.pth   # path to a pre-trained model, if using one
 
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
@@ -73,11 +73,11 @@ optimizer:
     momentum: 0.9  # momentum for SGD optimizer
 
 # training config
-# lr_scheduler: linear   # change to step later
-lr_scheduler: step   # learning rate scheduler step
+lr_scheduler: linear   # change to step later
+# lr_scheduler: step   # learning rate scheduler step
 lr_step: 3
 lr_gamma: 0.4   # learning rate scheduler
-nEpochs: 30   # number of epochs to train for
+nEpochs: 8   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
 rec_iter: 100   # interval iterations for recording

@@ -107,7 +107,6 @@ def add_gaussian_noise(ins, mean=0, stddev=0.2):
     return ins + noise
 
 
-@BACKBONE.register_module(module_name="xception")
 class Xception(nn.Module):
     """
     Xception optimized for the ImageNet dataset, as specified in

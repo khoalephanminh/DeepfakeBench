@@ -69,13 +69,13 @@ class SBIDetector(AbstractDetector):
         model_config = config['backbone_config']
         backbone = backbone_class(model_config)
         # if donot load the pretrained weights, fail to get good results
-        state_dict = torch.load(config['pretrained'])
-        for name, weights in state_dict.items():
-            if 'pointwise' in name:
-                state_dict[name] = weights.unsqueeze(-1).unsqueeze(-1)
-        state_dict = {k:v for k, v in state_dict.items() if 'fc' not in k} # uncomment later
-        backbone.load_state_dict(state_dict, False)
-        logger.info('Load pretrained model successfully!')
+        # state_dict = torch.load(config['pretrained'])
+        # for name, weights in state_dict.items():
+        #     if 'pointwise' in name:
+        #         state_dict[name] = weights.unsqueeze(-1).unsqueeze(-1)
+        # state_dict = {k:v for k, v in state_dict.items() if 'fc' not in k} # uncomment later
+        # backbone.load_state_dict(state_dict, False)
+        # logger.info('Load pretrained model successfully!')
         return backbone
 
     def build_loss(self, config):
@@ -87,7 +87,7 @@ class SBIDetector(AbstractDetector):
     def features(self, data_dict: dict) -> torch.tensor:
         # print("data_dict=", data_dict.keys())
         # print("image=", data_dict['image'].shape)
-        self.backbone.visualize_gradcam(data_dict['image'], f"{data_dict['index']}_{data_dict['label']}")
+        # self.backbone.visualize_gradcam(data_dict['image'], f"{data_dict['index']}_{data_dict['label']}")
         return self.backbone.features(data_dict['image'])
 
     def classifier(self, features: torch.tensor) -> torch.tensor:
