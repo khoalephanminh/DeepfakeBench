@@ -68,14 +68,14 @@ class FSBIDetector(AbstractDetector):
         backbone_class = BACKBONE[config['backbone_name']]
         model_config = config['backbone_config']
         backbone = backbone_class(model_config)
-        # if donot load the pretrained weights, fail to get good results
-        state_dict = torch.load(config['pretrained'])
-        for name, weights in state_dict.items():
-            if 'pointwise' in name:
-                state_dict[name] = weights.unsqueeze(-1).unsqueeze(-1)
-        state_dict = {k:v for k, v in state_dict.items() if 'fc' not in k}
-        backbone.load_state_dict(state_dict, False)
-        logger.info('Load pretrained model successfully!')
+        ## if donot load the pretrained weights, fail to get good results
+        #state_dict = torch.load(config['pretrained'])
+        #for name, weights in state_dict.items():
+        #    if 'pointwise' in name:
+        #        state_dict[name] = weights.unsqueeze(-1).unsqueeze(-1)
+        #state_dict = {k:v for k, v in state_dict.items() if 'fc' not in k}
+        #backbone.load_state_dict(state_dict, False)
+        #logger.info('Load pretrained model successfully!')
         return backbone
 
     def build_loss(self, config):

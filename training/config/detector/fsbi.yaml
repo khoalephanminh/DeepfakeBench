@@ -1,16 +1,10 @@
 # model setting
 model_name: fsbi   # model name
 
-#pretrained: ./training/pretrained/adv-efficientnet-b5-86493f6b.pth
-#pretrained: ./training/pretrained/efficientnet-b5-b6417697.pth
-pretrained: ./training/pretrained/xception-b5690688.pth
-#pretrained: ./training/pretrained/efficientnet-b4-6ed6700e.pth
-#pretrained: ./training/pretrained/adv-efficientnet-b4-44fb3a87.pth
-
+#finetune_path: ./logs/training/.../.../test/avg/ckpt_best.pth
 #backbone_name: efficientnetb5
-backbone_name: xception
-#backbone_name: efficientnetb4
-
+#backbone_name: xception
+backbone_name: efficientnetb4
 
 #backbone setting
 backbone_config:
@@ -18,7 +12,11 @@ backbone_config:
   num_classes: 2
   inc: 3
   dropout: false
-  pretrained: true
+  #pretrained_path: ./training/pretrained/adv-efficientnet-b5-86493f6b.pth
+  #pretrained_path: ./training/pretrained/efficientnet-b5-b6417697.pth
+  #pretrained_path: ./training/pretrained/xception-b5690688.pth
+  pretrained_path: ./training/pretrained/efficientnet-b4-6ed6700e.pth
+  #pretrained_path: ./training/pretrained/adv-efficientnet-b4-44fb3a87.pth
 
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
@@ -31,12 +29,12 @@ compression: c23  # compression-level for videos
 train_batchSize: 32   # training batch size
 test_batchSize: 32   # test batch size
 workers: 8   # number of data loading workers
-frame_num: {'train': 32, 'test': 32}   # number of frames to use per video in training and testing
+frame_num: {'train': 8, 'test': 32}   # number of frames to use per video in training and testing
 resolution: 380   # resolution of output image to network
 with_mask: false   # whether to include mask information in the input
 with_landmark: true   # whether to include facial landmark information in the input
-save_ckpt: false   # whether to save checkpoint
-save_feat: false   # whether to save features
+save_ckpt: true   # whether to save checkpoint
+save_feat: true   # whether to save features
 
 
 # data augmentation
@@ -60,7 +58,7 @@ std: [0.229, 0.224, 0.225]
 # optimizer config
 optimizer:
   # choose between 'adam' and 'sgd'
-  type: sam
+  type: adam
   adam:
     lr: 0.0002  # learning rate
     beta1: 0.9  # beta1 for Adam optimizer
@@ -81,15 +79,13 @@ optimizer:
 lr_scheduler: linear
 lr_step: 3
 lr_gamma: 0.4   # learning rate scheduler
-lr_T_max: 4
-lr_eta_min: 0.00001
-nEpochs: 100   # number of epochs to train for
+nEpochs: 8   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
 rec_iter: 100   # interval iterations for recording
 logdir: ./logs   # folder to output images and logs
 manualSeed: 1024   # manual seed for random number generation
-save_ckpt: false   # whether to save checkpoint
+
 
 # loss function
 loss_func: cross_entropy   # loss function to use

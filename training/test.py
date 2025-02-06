@@ -13,6 +13,9 @@ import pickle
 from tqdm import tqdm
 from copy import deepcopy
 from PIL import Image as pil_image
+from sklearn.metrics import confusion_matrix
+import matplotlib.pyplot as plt
+
 from metrics.utils import get_test_metrics
 import torch
 import torch.nn as nn
@@ -46,6 +49,9 @@ parser.add_argument('--weights_path', type=str,
 args = parser.parse_args()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+write_confusion_matrix = False
+
 
 def init_seed(config):
     if config['manualSeed'] is None:
@@ -94,6 +100,7 @@ def test_one_dataset(model, data_loader):
     feature_lists = []
     label_lists = []
     for i, data_dict in tqdm(enumerate(data_loader), total=len(data_loader)):
+        data_dict['index'] = i
         # get data
         data, label, mask, landmark = \
         data_dict['image'], data_dict['label'], data_dict['mask'], data_dict['landmark']
@@ -137,6 +144,23 @@ def test_epoch(model, test_data_loaders):
         for k, v in metric_one_dataset.items():
             tqdm.write(f"{k}: {v}")
 
+        threshold = 0.5
+        pred_nps = [1 if i > threshold else 0 for i in predictions_nps]
+        if write_confusion_matrix:
+            cm = confusion_matrix(label_nps, pred_nps)
+            print("Confusion Matrix:")
+            print(cm)
+
+        pred_0 = predictions_nps[label_nps == 0]
+        pred_1 = predictions_nps[label_nps == 1]
+        plt.hist(pred_0, bins=100, color='blue', alpha=0.5, label='Real')
+        plt.hist(pred_1, bins=100, color='red', alpha=0.5, label='Fake')
+        plt.xlabel("Predicted Probability")
+        plt.ylabel("Frequency")
+        plt.title("Histogram of Predictions for Each Label")
+        plt.legend()
+        plt.savefig("./figures/hist.jpg", dpi=300, bbox_inches="tight")
+
     return metrics_all_datasets
 
 @torch.no_grad()
@@ -168,6 +192,10 @@ def main():
     # set cudnn benchmark if needed
     if config['cudnn']:
         cudnn.benchmark = True
+
+    if config.get('confusion_matrix', False):
+        global write_confusion_matrix
+        write_confusion_matrix = True
 
     # prepare the testing data loader
     test_data_loaders = prepare_testing_data(config)

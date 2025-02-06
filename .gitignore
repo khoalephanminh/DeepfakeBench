@@ -13,3 +13,12 @@ datasets/rgb/
 tmp_img*/
 Miniconda3-latest-Linux-x86_64.sh
 training/pretrained/author_sbi.tar
+
+# Ignore all image files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.svg

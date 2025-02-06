@@ -21,6 +21,11 @@ import torch.utils.model_zoo as model_zoo
 from torch.nn import init
 from typing import Union
 from metrics.registry import BACKBONE
+import random
+from pytorch_grad_cam import GradCAM
+from pytorch_grad_cam.utils.image import show_cam_on_image
+from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
+import matplotlib.pyplot as plt
 
 logger = logging.getLogger(__name__)
 
@@ -191,7 +196,6 @@ class Xception(nn.Module):
         return x
 
     def fea_part1_1(self, x):  
-        
         x = self.conv2(x)
         x = self.bn2(x)
         x = self.relu(x) 
@@ -247,7 +251,7 @@ class Xception(nn.Module):
 
         return x
      
-    def features(self, input):
+    def features(self, input, show_gradcam=True):
         x = self.fea_part1(input)    
 
         x = self.fea_part2(x)
@@ -258,6 +262,9 @@ class Xception(nn.Module):
 
         if self.mode == 'adjust_channel':
             x = self.adjust_channel(x)
+
+        # if show_gradcam:
+        #     self.visualize_gradcam(input)
         
         return x
 
@@ -279,7 +286,62 @@ class Xception(nn.Module):
             out = self.last_linear(x)
         return out
 
-    def forward(self, input):
+    def forward(self, input, show_gradcam=True):
         x = self.features(input)
         out = self.classifier(x)
-        return out, x
+
+        if show_gradcam:
+            return out
+        else:  
+            return out, x
+
+
+    def visualize_gradcam(self, input_tensor, raw_id=None):
+        # Ensure the model is in evaluation mode
+        output_folder = './gradcam_xception_1'
+        os.makedirs(output_folder, exist_ok=True)
+        self.eval()
+
+        # Find the last convolutional layer        
+        target_layers = [self.conv4] # This works, but not sure the last layer
+        # target_layers = [self.adjust_channel[0]] # This get error
+        # print("target_layers=", target_layers)
+        targets = [ClassifierOutputTarget(1)]
+        
+        # Construct the CAM object once, and then re-use it on many images.
+        with GradCAM(model=self, target_layers=target_layers) as cam:
+            # You can also pass aug_smooth=True and eigen_smooth=True, to apply smoothing.
+            torch.set_grad_enabled(True) # required for grad cam
+            grayscale_cam = cam(input_tensor=input_tensor, targets=targets)
+            # In this example grayscale_cam has only one image in the batch:
+            single_image_tensor = input_tensor[0].unsqueeze(0)
+            rgb_img = single_image_tensor.cpu().numpy().transpose(0, 2, 3, 1)[0]
+            rgb_img = (rgb_img - rgb_img.min()) / (rgb_img.max() - rgb_img.min())
+            grayscale_cam = grayscale_cam[0, :]
+            visualization = show_cam_on_image(rgb_img, grayscale_cam, use_rgb=True)
+            # You can also get the model outputs without having to redo inference
+            # model_outputs = cam.outputs
+
+            if raw_id is None:
+                raw_id = random.randint(0, 10000)
+            output_path = os.path.join(output_folder, f'gradcam_{raw_id}_{0}.png')
+            plt.imsave(output_path, visualization)
+            print(f"Grad-CAM visualization saved to {output_path}")
+
+        # # Iterate over the batch and save each Grad-CAM visualization
+        # for i in range(input_tensor.size(0)):
+        #     # Extract the single image tensor and add a batch dimension
+        #     single_image_tensor = input_tensor[i].unsqueeze(0)
+
+        #     # Generate Grad-CAM
+        #     grayscale_cam = cam(input_tensor=single_image_tensor, targets=None)
+
+        #     # Convert grayscale CAM to heatmap
+        #     input_image = single_image_tensor.cpu().numpy().transpose(0, 2, 3, 1)[0]
+        #     input_image = (input_image - input_image.min()) / (input_image.max() - input_image.min())
+        #     visualization = show_cam_on_image(input_image, grayscale_cam[0], use_rgb=True)
+
+        #     # Save the Grad-CAM heatmap to the output folder
+        #     output_path = os.path.join(output_folder, f'gradcam_{raw_id}_{i}.png')
+        #     plt.imsave(output_path, visualization)
+        #     print(f"Grad-CAM visualization saved to {output_path}")

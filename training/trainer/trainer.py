@@ -66,6 +66,12 @@ class Trainer(object):
         )
         self.speed_up()  # move model to GPU
 
+        self.finetune_path = config.get('finetune_path', '')
+        self.is_finetune = os.path.exists(self.finetune_path)
+        if self.is_finetune:
+            self.load_ckpt(self.finetune_path)
+            self.logger.info(f"Finetune from {self.finetune_path}")
+        
         # get current time
         self.timenow = time_now
         # create directory path
@@ -239,6 +245,29 @@ class Trainer(object):
         train_recorder_metric = defaultdict(Recorder)
 
         for iteration, data_dict in tqdm(enumerate(train_data_loader),total=len(train_data_loader)):
+            # run test at the beginning if finetuning
+            if self.is_finetune:
+                self.is_finetune = False
+                if test_data_loaders is not None and (not self.config['ddp'] ):
+                    self.logger.info("===> Test start!")
+                    test_best_metric = self.test_epoch(
+                        epoch,
+                        iteration,
+                        test_data_loaders,
+                        step_cnt,
+                    )
+                elif test_data_loaders is not None and (self.config['ddp'] and dist.get_rank() == 0):
+                    self.logger.info("===> Test start!")
+                    test_best_metric = self.test_epoch(
+                        epoch,
+                        iteration,
+                        test_data_loaders,
+                        step_cnt,
+                    )
+                else:
+                    test_best_metric = None
+
+
             self.setTrain()
             # more elegant and more scalable way of moving data to GPU
             for key in data_dict.keys():

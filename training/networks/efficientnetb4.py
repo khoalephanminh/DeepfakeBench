@@ -27,12 +27,12 @@ class EfficientNetB4(nn.Module):
         self.dropout = efficientnetb4_config["dropout"]
         self.mode = efficientnetb4_config["mode"]
 
-        # Load the EfficientNet-B4 model without pre-trained weights
-        if efficientnetb4_config['pretrained']:
-            self.efficientnet = EfficientNet.from_pretrained('efficientnet-b4',weights_path=efficientnetb4_config['pretrained'])  # FIXME: load the pretrained weights from online
-        # self.efficientnet = EfficientNet.from_name('efficientnet-b4')
-        else:
-            self.efficientnet = EfficientNet.from_name('efficientnet-b4')
+        # Load the EfficientNet-B4 model with local pre-trained weights
+        self.efficientnet = EfficientNet.from_name('efficientnet-b4')
+        pretrained_path = efficientnetb4_config.get("pretrained_path", "")
+        if os.path.exists(pretrained_path):
+            self.efficientnet.load_state_dict(torch.load(pretrained_path))
+
         # Modify the first convolutional layer to accept input tensors with 'inc' channels
         self.efficientnet._conv_stem = nn.Conv2d(inc, 48, kernel_size=3, stride=2, bias=False)
 

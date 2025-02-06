@@ -23,7 +23,7 @@ test_dataset: [Celeb-DF-v2, roop, FaceShifter]
 dataset_type: blend
 
 compression: c23  # compression-level for videos
-train_batchSize: 24   # training batch size, 24 initially
+train_batchSize: 32   # training batch size, 24 initially
 test_batchSize: 32   # test batch size
 workers: 8   # number of data loading workers
 frame_num: {'train': 8, 'test': 32}   # number of frames to use per video in training and testing
@@ -36,7 +36,7 @@ save_feat: false   # whether to save features
 
 
 # data augmentation
-use_data_augmentation: False  # Add this flag to enable/disable data augmentation
+use_data_augmentation: True  # Add this flag to enable/disable data augmentation
 data_aug:
   flip_prob: 0.5
   rotate_prob: 0.5

@@ -222,10 +222,10 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
                 total_frames = len(frame_paths)
 
                 # I forgot to remove this!!!
-                # if total_frames < 32 and self.mode == 'train':  # Replace MINIMUM_FRAME_THRESHOLD with your desired minimum number of frames
-                #     if total_frames < 10:
-                #         print(f"Folder {video_info['frames']} contains only {total_frames} images.")
-                #     continue  # Skip this folder if it doesn't have enough images
+                if total_frames < 32 and self.mode == 'train':  # Replace MINIMUM_FRAME_THRESHOLD with your desired minimum number of frames
+                    if total_frames < 10:
+                        print(f"Folder {video_info['frames']} contains only {total_frames} images.")
+                    continue  # Skip this folder if it doesn't have enough images
 
                 if self.frame_num < total_frames:
                     total_frames = self.frame_num

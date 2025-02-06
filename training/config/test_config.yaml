@@ -1,5 +1,5 @@
 mode: test
-lmdb: False
+lmdb: True
 rgb_dir: './datasets/rgb'
 lmdb_dir:  './datasets/lmdb'
 dataset_json_folder: './preprocessing/dataset_json'
@@ -36,3 +36,5 @@ label_dict:
   # Roop
   roop_Real: 0
   roop_Fake: 1
+
+confusion_matrix: true

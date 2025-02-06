@@ -22,7 +22,7 @@ dataset_type: blend
 
 compression: c23  # compression-level for videos
 train_batchSize: 24   # training batch size, 24 initially
-test_batchSize: 32   # test batch size
+test_batchSize: 1   # test batch size, initially 32
 workers: 8   # number of data loading workers
 frame_num: {'train': 8, 'test': 32}   # number of frames to use per video in training and testing
 # resolution: 256   # resolution of output image to network
