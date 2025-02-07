@@ -38,6 +38,7 @@ from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 import matplotlib.pyplot as plt
 
 from torch.utils.data import DataLoader, Dataset
+from dataset.fsbi_utils import get_dwt
 
 parser = argparse.ArgumentParser(description='Process some paths.')
 parser.add_argument('--detector_path', type=str, 
@@ -57,9 +58,8 @@ args = parser.parse_args()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class ImageDataset(Dataset):
-    def __init__(self, input_folder, config, transform=None):
+    def __init__(self, input_folder, config):
         self.input_folder = input_folder
-        self.transform = transform
         self.image_paths = [os.path.join(root, file)
                             for root, _, files in os.walk(input_folder)
                             for file in files if file.endswith('.png') or file.endswith('.jpg')]
@@ -92,13 +92,17 @@ class ImageDataset(Dataset):
         image = Image.fromarray(np.array(img, dtype=np.uint8))
 
         image = np.array(image)  # Convert to numpy array for data augmentation
+
+        image0 = image
+        if self.config['model_name'] == 'fsbi':
+            image = get_dwt(image, (self.config['resolution'], self.config['resolution']))
         image = self.normalize(self.to_tensor(image))
-        return image
+        return [image0, image]  # Return the original image and normalized image
 
     def __getitem__(self, idx):
         image_path = self.image_paths[idx]
-        image = self.load_rgb(image_path)
-        return image
+        images = self.load_rgb(image_path)
+        return images
 
 def load_images_in_batches(input_folder, config, batch_size):
     dataset = ImageDataset(input_folder, config)
@@ -106,7 +110,7 @@ def load_images_in_batches(input_folder, config, batch_size):
     
     return dataloader
 
-def visualize_gradcam(model, input_tensor, output_folder, use_smooth=0):
+def visualize_gradcam(model, input_tensors, output_folder, use_smooth=0):
     model_name = type(model.backbone).__name__
     # print(model.backbone)
     # return
@@ -125,6 +129,9 @@ def visualize_gradcam(model, input_tensor, output_folder, use_smooth=0):
         target_layers = [model.backbone.efficientnet._conv_head]
 
     targets = [ClassifierOutputTarget(1)]
+
+    input_tensor_original = input_tensors[0]
+    input_tensor = input_tensors[1]
     input_tensor = input_tensor.to(device)
     
     # Construct the CAM object once, and then re-use it on many images.
@@ -148,8 +155,19 @@ def visualize_gradcam(model, input_tensor, output_folder, use_smooth=0):
             prob = torch.softmax(pred, dim=1)[:, 1]
             print("prob=", prob)
 
-            output_path = os.path.join(output_folder, f'gradcam_{prob.item()}.png')
+            #round prob to 2 decimal places
+            prob = f"{prob.item():.6f}"
+            output_path = os.path.join(output_folder, f'gradcam_{prob}_x.png')
+            output_path2 = os.path.join(output_folder, f'gradcam_{prob}_o.png')
+
             plt.imsave(output_path, visualization)
+            
+            # print("numpy_image=", input_tensor_original[i].shape)
+            # print("numpy_image=", input_tensor_original[i])
+            numpy_image = input_tensor_original[i].cpu().numpy()  # Change shape to (H, W, C)
+            numpy_image = numpy_image.astype(np.uint8)
+            cv2.imwrite(output_path2, cv2.cvtColor(numpy_image, cv2.COLOR_RGB2BGR))
+
             print(f"Grad-CAM visualization saved to {output_path}")
 
 def init_seed(config):
@@ -218,6 +236,10 @@ def main():
     # Load images in batches
     dataloader = load_images_in_batches(input_folder, config, batch_size)
     
+    #remove output_folder if exist
+    if os.path.exists(output_folder):
+        os.system(f"rm -r {output_folder}")
+
     # Process batches through the model
     print("use_smooth=", use_smooth)
     for batch in dataloader:

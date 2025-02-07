@@ -16,7 +16,7 @@ from .utils import slowfast
 # from .f3net_detector import F3netDetector
 # from .meso4_detector import Meso4Detector
 # from .meso4Inception_detector import Meso4InceptionDetector
-# from .spsl_detector import SpslDetector
+from .spsl_detector import SpslDetector
 # from .core_detector import CoreDetector
 # from .capsule_net_detector import CapsuleNetDetector
 from .srm_detector import SRMDetector

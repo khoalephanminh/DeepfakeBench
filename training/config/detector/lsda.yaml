@@ -2,11 +2,11 @@
 log_dir: logs/evaluations/lsda
 
 # model setting
-# pretrained: ./training/pretrained/efficientnet-b4-6ed6700e.pth   # path to a pre-trained model, if using one
-pretrained: ./training/pretrained/xception-b5690688.pth   # path to a pre-trained model, if using one
+pretrained: ./training/pretrained/efficientnet-b4-6ed6700e.pth   # path to a pre-trained model, if using one
+# pretrained: ./training/pretrained/xception-b5690688.pth   # path to a pre-trained model, if using one
 model_name: lsda   # model name
-# backbone_name: efficientnetb4  # backbone name
-backbone_name: xception  # backbone name
+backbone_name: efficientnetb4  # backbone name
+# backbone_name: xception  # backbone name
 
 #backbone setting
 backbone_config:

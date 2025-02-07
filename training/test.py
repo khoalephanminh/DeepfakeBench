@@ -153,13 +153,15 @@ def test_epoch(model, test_data_loaders):
 
         pred_0 = predictions_nps[label_nps == 0]
         pred_1 = predictions_nps[label_nps == 1]
-        plt.hist(pred_0, bins=100, color='blue', alpha=0.5, label='Real')
-        plt.hist(pred_1, bins=100, color='red', alpha=0.5, label='Fake')
+        plt.figure()
+        plt.ylim(0, 500)
+        plt.hist(pred_0, bins=100, color='blue', alpha=0.5, label=f'Real {key}')
+        plt.hist(pred_1, bins=100, color='red', alpha=0.5, label=f'Fake {key}')
         plt.xlabel("Predicted Probability")
         plt.ylabel("Frequency")
-        plt.title("Histogram of Predictions for Each Label")
+        plt.title(f"Histogram of Predictions for {key}")
         plt.legend()
-        plt.savefig("./figures/hist.jpg", dpi=300, bbox_inches="tight")
+        plt.savefig(f"./figures/hist_{key}.jpg", dpi=300, bbox_inches="tight")
 
     return metrics_all_datasets
 
