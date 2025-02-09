@@ -22,3 +22,6 @@ training/pretrained/author_sbi.tar
 *.bmp
 *.tiff
 *.svg
+grad_upload.zip
+gradcam_sbi_ff_celeb_upload.zip
+gdrive

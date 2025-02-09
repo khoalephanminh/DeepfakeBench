@@ -292,6 +292,12 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
 
         print("len 1=", len(frame_path_list), len(label_list))
         
+        # print("frame_path_list=", frame_path_list)
+        #output frame_path_list to txt
+        with open(f'./cdfv2_frame_path_list.txt', 'w') as f:
+            for item in frame_path_list:
+                f.write("%s\n" % item)
+
         return frame_path_list, label_list, video_name_list
 
      
