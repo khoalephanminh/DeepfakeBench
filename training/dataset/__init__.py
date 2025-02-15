@@ -15,6 +15,7 @@ from .abstract_dataset import DeepfakeAbstractBaseDataset
 # from .lrl_dataset import LRLDataset
 # from .pair_dataset import pairDataset
 from .sbi_dataset import SBIDataset
+from .sbi_p2p_dataset import SBIP2PDataset
 from .lsda_dataset import LSDADataset
 from .tall_dataset import TALLDataset
 from .sbiplus_dataset_v2 import SBIPlusV2Dataset

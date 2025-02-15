@@ -69,6 +69,8 @@ def prepare_training_data(config):
             train_set = FWABlendDataset(config)
         elif config['model_name'] == 'sbi':
             train_set = SBIDataset(config, mode='train')
+        elif config['model_name'] == 'sbi_p2p':
+            train_set = SBIP2PDataset(config, mode='train')
         elif config['model_name'] == 'fsbi':
             train_set = FSBIDataset(config, mode='train')
         elif config['model_name'] == 'lsda':

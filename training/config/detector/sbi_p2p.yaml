@@ -2,9 +2,10 @@
 log_dir: /data/home/zhiyuanyan/logs/benchv2/sbi_v3
 
 # model setting
-pretrained: ./training/pretrained/xception-b5690688.pth   # path to a pre-trained model, if using one
-model_name: sbi   # model name
-backbone_name: xception  # backbone name
+# pretrained: ./training/pretrained/xception-b5690688.pth   # path to a pre-trained model, if using one
+model_name: sbi_p2p   # model name
+backbone_name: efficientnetb4  # backbone name
+# backbone_name: xception  # backbone name
 
 #backbone setting
 backbone_config:
@@ -12,7 +13,8 @@ backbone_config:
   num_classes: 2
   inc: 3
   dropout: false
-  pretrained: true
+  # pretrained: true
+  pretrained_path: ./training/pretrained/efficientnet-b4-6ed6700e.pth   # path to a pre-trained model, if using one
 
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
@@ -21,20 +23,20 @@ test_dataset: [Celeb-DF-v2, roop, FaceShifter]
 dataset_type: blend
 
 compression: c23  # compression-level for videos
-train_batchSize: 24   # training batch size, 24 initially
-test_batchSize: 32   # test batch size, initially 32
+train_batchSize: 32   # training batch size, 24 initially
+test_batchSize: 32   # test batch size
 workers: 8   # number of data loading workers
 frame_num: {'train': 8, 'test': 32}   # number of frames to use per video in training and testing
 # resolution: 256   # resolution of output image to network
-resolution: 256   # this go with effb4
+resolution: 380   # this go with effb4
 with_mask: false   # whether to include mask information in the input
 with_landmark: true   # whether to include facial landmark information in the input
-save_ckpt: true   # whether to save checkpoint
+save_ckpt: false   # whether to save checkpoint
 save_feat: false   # whether to save features
 
 
 # data augmentation
-use_data_augmentation: False  # Add this flag to enable/disable data augmentation
+use_data_augmentation: True  # Add this flag to enable/disable data augmentation
 data_aug:
   flip_prob: 0.5
   rotate_prob: 0.5
@@ -71,17 +73,17 @@ optimizer:
     momentum: 0.9  # momentum for SGD optimizer
 
 # training config
-# lr_scheduler: linear   # change to step later
-lr_scheduler: step   # learning rate scheduler step
+lr_scheduler: linear   # change to step later
+# lr_scheduler: step   # learning rate scheduler step
 lr_step: 3
 lr_gamma: 0.4   # learning rate scheduler
-nEpochs: 10   # number of epochs to train for
+nEpochs: 20   # number of epochs to train for
 start_epoch: 0   # manual epoch number (useful for restarts)
 save_epoch: 1   # interval epochs for saving models
 rec_iter: 100   # interval iterations for recording
 logdir: ./logs   # folder to output images and logs
 manualSeed: 1024   # manual seed for random number generation
-save_ckpt: true   # whether to save checkpoint
+save_ckpt: false   # whether to save checkpoint
 
 # loss function
 loss_func: cross_entropy   # loss function to use

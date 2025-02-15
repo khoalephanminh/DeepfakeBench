@@ -29,6 +29,7 @@ from .srm_detector import SRMDetector
 # from .timesformer_detector import TimeSformerDetector
 # from .xclip_detector import XCLIPDetector
 from .sbi_detector import SBIDetector
+from .sbi_p2p_detector import SBIP2PDetector
 # from .ftcn_detector import FTCNDetector
 # from .i3d_detector import I3DDetector
 from .altfreezing_detector import AltFreezingDetector

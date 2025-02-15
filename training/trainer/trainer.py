@@ -130,9 +130,18 @@ class Trainer(object):
             saved = torch.load(model_path, map_location='cpu')
             suffix = model_path.split('.')[-1]
             if suffix == 'p':
-                self.model.load_state_dict(saved.state_dict())
-            else:
+                saved = saved.state_dict()
+
+            if type(self.model) is DDP:
+                # add the prefix 'module.' to the keys if needed
+                saved = {k.replace('backbone.', 'module.backbone.'): v for k, v in saved.items()}
+                saved = {k.replace('module.module.', 'module.'): v for k, v in saved.items()}
                 self.model.load_state_dict(saved)
+            else:
+                # remove the prefix 'module.' from the keys if needed
+                saved = {k.replace('module.backbone.', 'backbone.'): v for k, v in saved.items()}
+                self.model.load_state_dict(saved)
+
             self.logger.info('Model found in {}'.format(model_path))
         else:
             raise NotImplementedError(
@@ -192,7 +201,10 @@ class Trainer(object):
         if self.config['optimizer']['type']=='sam':
             for i in range(2):
                 predictions = self.model(data_dict)
-                losses = self.model.get_losses(data_dict, predictions)
+                if type(self.model) is DDP:
+                    losses = self.model.module.get_losses(data_dict, predictions)
+                else:
+                    losses = self.model.get_losses(data_dict, predictions)
                 if i == 0:
                     pred_first = predictions
                     losses_first = losses

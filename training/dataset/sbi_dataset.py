@@ -56,23 +56,24 @@ class SBIDataset(DeepfakeAbstractBaseDataset):
 
         # # ----remove from here -----
 
-        # # Convert RGB to BGR
-        # fake_image_bgr = cv2.cvtColor(fake_image, cv2.COLOR_RGB2BGR)
-        # real_image_bgr = cv2.cvtColor(real_image, cv2.COLOR_RGB2BGR)
+        # Convert RGB to BGR
+        fake_image_bgr = cv2.cvtColor(fake_image, cv2.COLOR_RGB2BGR)
+        real_image_bgr = cv2.cvtColor(real_image, cv2.COLOR_RGB2BGR)
 
-        # # if index == 604:
-        # #     print("idx, landmark shape: ", index, landmark.shape)
-        # #     print("landmark=", landmark)
+        # if index == 604:
+        #     print("idx, landmark shape: ", index, landmark.shape)
+        #     print("landmark=", landmark)
 
         # # Draw landmark points on the images
         # for point in landmark:
         #     cv2.circle(fake_image_bgr, (int(point[0]), int(point[1])), 2, (0, 0, 255), -1)
         #     cv2.circle(real_image_bgr, (int(point[0]), int(point[1])), 2, (0, 0, 255), -1)
 
-        # # Save images using cv2.imwrite
-        # os.makedirs('./tmp_img_380_ldm2', exist_ok=True)
-        # cv2.imwrite(f'./tmp_img_380_ldm2/{index}_fake_with_landmarks.png', fake_image_bgr)
-        # cv2.imwrite(f'./tmp_img_380_ldm2/{index}_real_with_landmarks.png', real_image_bgr)
+        # Save images using cv2.imwrite
+        randid = np.random.randint(1, 1000) 
+        os.makedirs('./sbi_output', exist_ok=True)
+        cv2.imwrite(f'./sbi_output/{index}_{randid}_fake.png', fake_image_bgr)
+        cv2.imwrite(f'./sbi_output/{index}_{randid}_real.png', real_image_bgr)
 
         # # ---end of remove----
 

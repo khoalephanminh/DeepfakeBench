@@ -3,6 +3,7 @@ import pywt
 import numpy as np
 
 def get_dwt(img, image_size, w='sym2', m='reflect'):
+    return img
     b, g, r = cv2.split(img)
 
     cA_r, (cH_r, cV_r, cD_r) = pywt.dwt2(r, w, mode=m)
