@@ -79,7 +79,8 @@ class DriftBlock(nn.Module):
 
     def forward(self,x):
 
-        noise = torch.randn(x.shape[0],512,8,8).cuda()
+        #noise = torch.randn(x.shape[0],512,8,8).cuda()
+        noise = torch.randn(x.shape[0],512,x.shape[2],x.shape[3]).cuda() # 380 resolution required (-1, 512, 11, 11)
         noise_processed = self.noise_process(noise)
         trans_res = self.concat_process(torch.cat((x,noise_processed),dim=1)) # cat or add?
         return trans_res
@@ -93,6 +94,7 @@ class FeatureAttentionBlock(nn.Module):
             nn.Linear(256, 512),
             Lambda(lambda x: x.view(-1, 512, 1, 1)),  # Reshape
             nn.ConvTranspose2d(512, 512, kernel_size=(8, 8))
+            #nn.ConvTranspose2d(512, 512, kernel_size=(11, 11)) # 380 resolution required (11, 11)
         )
         self.inverse_conv2 =  nn.Sequential(
             nn.Linear(2, 256),
@@ -100,6 +102,7 @@ class FeatureAttentionBlock(nn.Module):
             nn.Linear(256, 512),
             Lambda(lambda x: x.view(-1, 512, 1, 1)),  # Reshape
             nn.ConvTranspose2d(512, 512, kernel_size=(8, 8))
+            #nn.ConvTranspose2d(512, 512, kernel_size=(11, 11)) # 380 resolution required (11, 11)
         )
         self.inverse_conv3 =  nn.Sequential(
             nn.Linear(2, 256),
@@ -107,6 +110,7 @@ class FeatureAttentionBlock(nn.Module):
             nn.Linear(256, 512),
             Lambda(lambda x: x.view(-1, 512, 1, 1)),  # Reshape
             nn.ConvTranspose2d(512, 512, kernel_size=(8, 8))
+            #nn.ConvTranspose2d(512, 512, kernel_size=(11, 11)) # 380 resolution required (11, 11)
         )
         self.attention = nn.Sequential(
             nn.Conv2d(512*4, 512, 1),
@@ -128,10 +132,6 @@ class FeatureAttentionBlock(nn.Module):
         return feature
 
 
-
-
-
-
 @DETECTOR.register_module(module_name='prodet')
 class ProDetDetector(AbstractDetector):
     def __init__(self, config):
@@ -142,6 +142,11 @@ class ProDetDetector(AbstractDetector):
         self.real2sbi=DriftBlock() # 这个drift对应的就是transition
         self.sbi2bi=DriftBlock()
         self.bi2fake=DriftBlock()
+        self.loss_gamma = config.get('loss_gamma',1)
+        self.loss_bld = config.get('loss_bld',1)
+        self.loss_iid = config.get('loss_iid',1)
+        self.loss_df = config.get('loss_df',1)
+        self.epoch=0
 
     def linear_init(self,m):
         if isinstance(m, nn.Linear):
@@ -153,9 +158,12 @@ class ProDetDetector(AbstractDetector):
         # prepare the backbone
         backbone_class = BACKBONE[config['backbone_name']]
         model_config = config['backbone_config']
-        model_config['pretrained'] = self.config['pretrained']
+        #model_config['pretrained'] = self.config['pretrained']
         backbone = backbone_class(model_config)
-        self.adjust_feature = nn.Conv2d(1792, 512, 1)
+        if config['backbone_name'] == 'xception':
+            self.adjust_feature = nn.Conv2d(2048, 512, 1)
+        else:
+            self.adjust_feature = nn.Conv2d(1792, 512, 1)
         self.blend_classifier = nn.Sequential(
             nn.AdaptiveAvgPool2d((1, 1)),
             nn.Flatten(),
@@ -193,10 +201,10 @@ class ProDetDetector(AbstractDetector):
 
         if config['comb_fake']['cat_manner'] == 're-class': # ignore
             self.re_classifier = nn.Linear(1792, 2)
-        if config['pretrained'] != 'None':
-            logger.info('Load pretrained model successfully!')
-        else:
-            logger.info('No pretrained model.')
+        #if config['pretrained'] != 'None':
+        #    logger.info('Load pretrained model successfully!')
+        #else:
+        #    logger.info('No pretrained model.')
         return backbone
     
     def build_loss(self, config):
@@ -249,22 +257,23 @@ class ProDetDetector(AbstractDetector):
 
     def get_losses(self, data_dict: dict, pred_dict: dict) -> dict:
         label = data_dict['label']
-        df_pred = pred_dict['df_pred']
         bld_pred = pred_dict['bld_pred']
-        bi_pred = pred_dict['bi_pred']
+        bi_pred  = pred_dict['bi_pred']
+        df_pred  = pred_dict['df_pred']
         bld_label,df_label,id_diff_label=self.generate_labels(label,pred_dict)
-        loss_df = self.loss_func(df_pred, df_label)
-        loss_bld = self.loss_func(bld_pred, bld_label)
-        loss_idd = self.loss_func(bi_pred, id_diff_label)
+        loss_bld = self.loss_func(bld_pred, bld_label)    # blend
+        loss_idd = self.loss_func(bi_pred, id_diff_label) # id diff
+        loss_df  = self.loss_func(df_pred, df_label)      # deepfake
+        loss_oriented=loss_bld*self.loss_bld+loss_idd*self.loss_iid+loss_df*self.loss_df # L_o
         if self.config['feature_drift']:
-            r2b_loss,b2b_loss,b2f_loss = self.get_drift_loss(pred_dict)
-            loss = loss_bld+loss_df+loss_idd+r2b_loss+b2b_loss+b2f_loss
+            r2b_loss,b2b_loss,b2f_loss = self.get_drift_loss(pred_dict) # transition loss L_t ? 
+            loss = loss_oriented+(r2b_loss+b2b_loss+b2f_loss)*self.loss_gamma
             loss_dict = {'overall': loss,'loss_df':loss_df,'loss_bld':loss_bld,'loss_iid':loss_idd,'r2b_loss':r2b_loss,'b2b_loss':b2b_loss,'b2f_loss':b2f_loss}
         else:
-            loss = loss_bld+loss_df+loss_idd
+            loss = loss_oriented
             loss_dict = {'overall': loss,'loss_df':loss_df,'loss_bld':loss_bld,'loss_iid':loss_idd}
         if self.config['comb_fake']['cat_manner'] == 'linear' or self.config['comb_fake']['cat_manner'] == 're-class':
-            loss_out = self.loss_func(pred_dict['cls'], bld_label)
+            loss_out = self.loss_func(pred_dict['cls'], bld_label) # L_d
             loss+=loss_out
             loss_dict['loss_linear']=loss_out
         return loss_dict

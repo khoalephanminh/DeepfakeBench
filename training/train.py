@@ -69,8 +69,8 @@ def prepare_training_data(config):
             train_set = FWABlendDataset(config)
         elif config['model_name'] == 'sbi':
             train_set = SBIDataset(config, mode='train')
-        elif config['model_name'] == 'sbi_p2p':
-            train_set = SBIP2PDataset(config, mode='train')
+        elif config['model_name'] == 'sbi_poisson':
+            train_set = SBIPoissonDataset(config, mode='train')
         elif config['model_name'] == 'fsbi':
             train_set = FSBIDataset(config, mode='train')
         elif config['model_name'] == 'lsda':
@@ -119,6 +119,7 @@ def prepare_training_data(config):
                 dataset=train_set,
                 batch_size=config['train_batchSize'],
                 shuffle=True,
+                # shuffle=False, #Change to True later
                 num_workers=int(config['workers']),
                 collate_fn=train_set.collate_fn,
                 )

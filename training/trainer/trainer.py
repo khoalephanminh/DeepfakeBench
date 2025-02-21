@@ -52,6 +52,7 @@ class Trainer(object):
             raise ValueError("config, model, optimizier, logger, and tensorboard writer must be implemented")
 
         self.config = config
+        self.model_name = config['model_name']
         self.model = model
         self.optimizer = optimizer
         self.scheduler = scheduler
@@ -244,6 +245,8 @@ class Trainer(object):
             times_per_epoch = 1
 
 
+        if self.model_name == 'prodet' and epoch>=1:
+            times_per_epoch = 3
         #times_per_epoch=4
 
         test_step = len(train_data_loader) // times_per_epoch    # test 10 times per epoch

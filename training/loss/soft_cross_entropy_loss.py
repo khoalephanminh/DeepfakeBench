@@ -8,7 +8,7 @@ from metrics.registry import LOSSFUNC
 class SoftCrossEntropyLoss(AbstractLossClass):
     def __init__(self):
         super().__init__()
-        self.bce_loss = nn.BCELoss()  # Binary Cross-Entropy Loss
+        self.bce_loss = nn.BCEWithLogitsLoss()  # Binary Cross-Entropy Loss
 
     def forward(self, inputs, targets):
         """
@@ -38,10 +38,11 @@ class SoftCrossEntropyLoss(AbstractLossClass):
         if targets_one_hot.shape != inputs.shape:
             raise ValueError(f"Shape mismatch: inputs shape {inputs.shape}, targets shape {targets_one_hot.shape}")
 
-        # Apply sigmoid activation to inputs
-        probs = torch.sigmoid(inputs)
+        # Apply sigmoid activation to inputs and Compute BCE loss
+        #probs = torch.sigmoid(inputs)
+        #loss = self.bce_loss(probs, targets_one_hot)
 
-        # Compute BCE loss
-        loss = self.bce_loss(probs, targets_one_hot)
+        # Use BCEWithLogitsLoss to combine sigmoid activation and BCE loss
+        loss = self.bce_loss(inputs, targets_one_hot)
 
         return loss

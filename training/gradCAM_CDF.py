@@ -32,7 +32,8 @@ from collections import defaultdict
 import argparse
 from logger import create_logger
 
-from pytorch_grad_cam import GradCAM
+# from pytorch_grad_cam import GradCAM
+from pytorch_grad_cam import GradCAMPlusPlus
 from pytorch_grad_cam.utils.image import show_cam_on_image
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 import matplotlib.pyplot as plt
@@ -55,7 +56,8 @@ parser.add_argument('--use_smooth', type=int, default=0, help='Whether to use sm
 #parser.add_argument("--lmdb", action='store_true', default=False)
 args = parser.parse_args()
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = 'cpu'
 
 class ImageDataset(Dataset):
     def __init__(self, input_folder, config):
@@ -68,7 +70,7 @@ class ImageDataset(Dataset):
         if os.path.isfile(input_folder):
             with open(input_folder, 'r') as f:
                 for line in f:
-                    if 'YouTube-real' in line:
+                    if 'Celeb-synthesis' in line: #Celeb-synthesis, YouTube-real, Celeb-real
                         self.image_paths.append(os.path.join(root_path, line.strip()).replace('\\', '/'))
 
         print("len(self.image_paths)=", len(self.image_paths))
@@ -151,7 +153,8 @@ def visualize_gradcam(model, input, output_folder, use_smooth=0):
     input_tensor = input_tensor.to(device)
     
     # Construct the CAM object once, and then re-use it on many images.
-    with GradCAM(model=model.backbone, target_layers=target_layers) as cam:
+    # with GradCAM(model=model.backbone, target_layers=target_layers) as cam:
+    with GradCAMPlusPlus(model=model.backbone, target_layers=target_layers) as cam:
         # You can also pass aug_smooth=True and eigen_smooth=True, to apply smoothing.
         torch.set_grad_enabled(True)  # required for grad cam
         if use_smooth:
@@ -258,11 +261,15 @@ def main():
 
     # Process batches through the model
     print("use_smooth=", use_smooth)
+    cnt_batch = 0
     for batch in dataloader:
+        cnt_batch += 1
+        print(f"i/total = {cnt_batch}/{len(dataloader)}")
         visualize_gradcam(model, batch, output_folder, use_smooth = use_smooth)
 
 if __name__ == '__main__':
-    folder_path = '/raid/dtle/deepfake/DeepfakeBench/grad_upload/grad_sbi_celeb_synthesis'
-    file_count = len([name for name in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, name))])
-    print(f"Number of files in '{folder_path}': {file_count}")
-    # main()
+    # folder_path = '/raid/dtle/deepfake/DeepfakeBench/grad_upload/effb4/grad_effb4_celeb_synthesis'
+    # file_count = len([name for name in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, name))])
+    # print(f"Number of files in '{folder_path}': {file_count}")
+    main()
+    # Edit the if 'Celeb-synthesis' in line: #Celeb-synthesis, YouTube-real, Celeb-real

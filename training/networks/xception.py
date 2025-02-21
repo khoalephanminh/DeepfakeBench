@@ -187,6 +187,19 @@ class Xception(nn.Module):
             nn.BatchNorm2d(512),
             nn.ReLU(inplace=False),
         )
+
+        pretrained_path = xception_config.get("pretrained_path", "")
+        if os.path.exists(pretrained_path):
+            saved = torch.load(pretrained_path)
+            saved_fix = {}
+            for k, v in saved.items():
+                if "pointwise" in k:
+                    v = v.unsqueeze(-1).unsqueeze(-1)
+                if "fc" not in k:
+                    saved_fix[k] = v
+            # skip last_linear and adjust_channel
+            self.load_state_dict(saved_fix, strict=False)
+            logger.info(f"Load pretrained model from {pretrained_path}")
            
     def fea_part1_0(self, x):
         x = self.conv1(x)
