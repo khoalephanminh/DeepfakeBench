@@ -61,6 +61,7 @@ def dynamic_blend(source,target,mask):
 
 def dynamic_poisson_blend(source,target,mask):
 	mask = (mask * 255).astype(np.uint8)
+	mask = np.squeeze(mask)
 	mask = np.stack([mask, mask, mask], axis=-1)
 	# print("mask = ", mask.shape, mask.dtype)
 	# print("mask unique = ", np.unique(mask))
