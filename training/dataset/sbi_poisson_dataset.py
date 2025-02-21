@@ -97,12 +97,18 @@ class SBIPoissonDataset(DeepfakeAbstractBaseDataset):
         real_image_trans = self.normalize(self.to_tensor(real_image))
         fake_poisson_image_trans = self.normalize(self.to_tensor(fake_poisson_image))
 
-        if random.random() < 0.8:
+        # if random.random() < 0.7:
+        rng = random.Random()  # Create a new instance
+        value = rng.random()
+        if value < 0.5:
             return {"fake": (fake_image_trans, fake_label), 
                 "real": (real_image_trans, real_label)}
         else:
             return {"fake": (fake_poisson_image_trans, fake_label), 
                 "real": (real_image_trans, real_label)}
+
+        # return {"fake": (fake_image_trans, fake_label), 
+        #         "real": (real_image_trans, real_label)}
 
     def __len__(self):
         return len(self.real_imglist)

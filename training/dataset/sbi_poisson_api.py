@@ -61,6 +61,7 @@ def dynamic_blend(source,target,mask):
 
 def dynamic_poisson_blend(source,target,mask):
 	mask = (mask * 255).astype(np.uint8)
+	mask = np.squeeze(mask)
 	mask = np.stack([mask, mask, mask], axis=-1)
 	# print("mask = ", mask.shape, mask.dtype)
 	# print("mask unique = ", np.unique(mask))
@@ -77,11 +78,11 @@ def dynamic_poisson_blend(source,target,mask):
 	centerOfBR = (br[0] + br[2] // 2, br[1] + br[3] // 2)
 
 	# choose between normal_clone and mixed_clone by 50-50 chance
-	if random.random() < 0.5:
-		result = cv2.seamlessClone(source, target, mask, centerOfBR, cv2.NORMAL_CLONE)
-	else:
-		result = cv2.seamlessClone(source, target, mask, centerOfBR, cv2.MIXED_CLONE)
-	# result = cv2.seamlessClone(source, target, mask, centerOfBR, cv2.NORMAL_CLONE)
+	# if random.random() < 0.5:
+	# 	result = cv2.seamlessClone(source, target, mask, centerOfBR, cv2.NORMAL_CLONE)
+	# else:
+	# 	result = cv2.seamlessClone(source, target, mask, centerOfBR, cv2.MIXED_CLONE)
+	result = cv2.seamlessClone(source, target, mask, centerOfBR, cv2.NORMAL_CLONE)
 
 	return result
 	# return target
