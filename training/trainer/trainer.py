@@ -239,8 +239,10 @@ class Trainer(object):
         ):
 
         self.logger.info("===> Epoch[{}] start!".format(epoch))
-        if epoch>=1:
-            times_per_epoch = 1 # 2 initially
+        # if epoch>=1: 
+        if epoch>-1: 
+            # times_per_epoch = 1 # 2 initially
+            times_per_epoch = 2 # 2 initially
         else:
             times_per_epoch = 1
 
@@ -259,6 +261,7 @@ class Trainer(object):
         train_recorder_loss = defaultdict(Recorder)
         train_recorder_metric = defaultdict(Recorder)
 
+        #self.is_finetune = False
         for iteration, data_dict in tqdm(enumerate(train_data_loader),total=len(train_data_loader)):
             # run test at the beginning if finetuning
             if self.is_finetune:

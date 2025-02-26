@@ -44,5 +44,5 @@ from .iid_detector import IIDDetector
 # from .multi_attention_detector import MultiAttentionDetector
 # from .sia_detector import SIADetector
 from .tall_detector import TALLDetector
-from .ProDet_detector import ProDetDetector  # Ensure this import is present
-from .fsbi_detector import FSBIDetector  # Ensure this import is present
+from .ProDet_detector import ProDetDetector
+from .fsbi_detector import FSBIDetector

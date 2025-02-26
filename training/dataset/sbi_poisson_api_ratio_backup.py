@@ -19,11 +19,26 @@ import sys
 import scipy as sp
 from skimage.measure import label, regionprops
 from training.dataset.library.bi_online_generation import random_get_hull
-from training.dataset.utils.poisson_image_editing import poisson_edit
+# from training.dataset.utils.poisson_image_editing import poisson_edit
 import albumentations as alb
 
 import warnings
 warnings.filterwarnings('ignore')
+
+from training.dataset.utils.fpie.process import GridProcessor
+
+
+
+proc = GridProcessor(
+	'{max,src,avg}',
+	'numpy',
+	8,
+	100,
+	1024,
+	8,
+	8,
+)
+print("proc.root=", proc.root)
 
 if os.path.exists('./mask_images'):
     shutil.rmtree('./mask_images')
@@ -37,16 +52,41 @@ def alpha_blend(source,target,mask):
 
 def dynamic_blend(source,target,mask):
 	mask_blured = get_blend_mask(mask)
+	mask_blured_copy = mask_blured.copy()
 	blend_list=[0.25,0.5,0.75,1,1,1]
 	blend_ratio = blend_list[np.random.randint(len(blend_list))]
 	mask_blured*=blend_ratio
 	img_blended=(mask_blured * source + (1 - mask_blured) * target)
-	return img_blended,mask_blured
+	return img_blended, mask_blured, mask_blured_copy, blend_ratio
 
-def dynamic_poisson_blend(source,target,mask_blured):
-	img_blended = poisson_edit(source, target, mask_blured, (0, 0)) # uncomment this
-	# img_blended=(mask_blured * source + (1 - mask_blured) * target)
-	return img_blended
+def dynamic_poisson_blend(source,target,mask,blend_ratio):
+	mask = (mask * 255).astype(np.uint8)
+	mask = np.squeeze(mask)
+	mask = np.stack([mask, mask, mask], axis=-1)
+	source = (source * blend_ratio).astype(np.uint8)
+	# print("mask = ", mask.shape, mask.dtype)
+	# print("mask unique = ", np.unique(mask))
+
+	# center = (source.shape[0] // 2, source.shape[1] // 2)
+	# # print("center=", center)
+	# result = cv2.seamlessClone(source, target, mask, center, cv2.NORMAL_CLONE)
+
+	# print("result = ", result.shape, result.dtype)
+	# print("result = ", np.unique(result))
+
+	monoMaskImage = cv2.split(mask)[0] # reducing the mask to a monochrome
+	br = cv2.boundingRect(monoMaskImage) # bounding rect (x,y,width,height)
+	centerOfBR = (br[0] + br[2] // 2, br[1] + br[3] // 2)
+
+	# choose between normal_clone and mixed_clone by 50-50 chance
+	# if random.random() < 0.5:
+	# 	result = cv2.seamlessClone(source, target, mask, centerOfBR, cv2.NORMAL_CLONE)
+	# else:
+	# 	result = cv2.seamlessClone(source, target, mask, centerOfBR, cv2.MIXED_CLONE)
+	result = cv2.seamlessClone(source, target, mask, centerOfBR, cv2.NORMAL_CLONE)
+
+	return result
+	# return target
 
 
 def get_blend_mask(mask):
@@ -293,12 +333,12 @@ class SBI_API:
 
 		source_tmp = source.copy()
 		img_tmp = img.copy()
+		mask_tmp = mask.copy()
 
 		# img_poisson_blended = poisson_edit(source_tmp, img_tmp, mask_tmp, (0, 0)) # uncomment this
-		img_blended,mask=dynamic_blend(source,img,mask)
-		mask_tmp = mask.copy()
-		# img_poisson_blended = dynamic_poisson_blend(source_tmp, img_tmp, mask_tmp)
-		img_poisson_blended = img_blended.copy()
+		img_blended,mask, mask_copy, blend_ratio=dynamic_blend(source,img,mask)
+		img_poisson_blended = dynamic_poisson_blend(source_tmp, img_tmp, mask_copy, blend_ratio)
+		# img_poisson_blended = img_blended.copy()
 
 		# mask_uint8 = (np.squeeze(mask) * 255).astype(np.uint8)
 		# # os.makedirs('mask_images', exist_ok=True)

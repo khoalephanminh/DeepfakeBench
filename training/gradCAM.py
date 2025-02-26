@@ -32,7 +32,7 @@ from collections import defaultdict
 import argparse
 from logger import create_logger
 
-from pytorch_grad_cam import GradCAM
+from pytorch_grad_cam import GradCAMPlusPlus
 from pytorch_grad_cam.utils.image import show_cam_on_image
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 import matplotlib.pyplot as plt
@@ -55,7 +55,8 @@ parser.add_argument('--use_smooth', type=int, default=0, help='Whether to use sm
 #parser.add_argument("--lmdb", action='store_true', default=False)
 args = parser.parse_args()
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = 'cpu'
 
 class ImageDataset(Dataset):
     def __init__(self, input_folder, config):
@@ -135,7 +136,7 @@ def visualize_gradcam(model, input_tensors, output_folder, use_smooth=0):
     input_tensor = input_tensor.to(device)
     
     # Construct the CAM object once, and then re-use it on many images.
-    with GradCAM(model=model.backbone, target_layers=target_layers) as cam:
+    with GradCAMPlusPlus(model=model.backbone, target_layers=target_layers) as cam:
         # You can also pass aug_smooth=True and eigen_smooth=True, to apply smoothing.
         torch.set_grad_enabled(True)  # required for grad cam
         if use_smooth:

@@ -1,41 +1,39 @@
 # model setting
-#pretrained: ./training/pretrained/adv-efficientnet-b5-86493f6b.pth
-pretrained: ./training/pretrained/xception-b5690688.pth
-# pretrained: ./training/pretrained/efficientnet-b4-6ed6700e.pth
-#pretrained: ./training/pretrained/adv-efficientnet-b4-44fb3a87.pth
-model_name: fsbi   # model name
-#backbone_name: efficientnetb5
-backbone_name: xception
-# backbone_name: efficientnetb4
+model_name: sbi_poisson
+backbone_name: cvt
+finetune_path: logs/training/fsbi/fsbi_2025-02-13-00-46-12_90.9_cvtw24_384_sbi_sam/test/Celeb-DF-v2/ckpt_best.pth #w24
+# finetune_path: logs/training/fsbi/fsbi_2025-02-13-03-30-19_87.4_cvt21_384_sbi_sam/test/Celeb-DF-v2/ckpt_best.pth #21
+# finetune_path: logs/training/fsbi/fsbi_2025-02-13-09-15-25_87_cvt13/test/Celeb-DF-v2/ckpt_best.pth #13
 
 #backbone setting
 backbone_config:
-  mode: original
   num_classes: 2
-  inc: 3
-  dropout: false
-  pretrained: true
+  from_pretrained: microsoft/cvt-w24-384-22k
+  # from_pretrained: microsoft/cvt-21-384-22k
+  # from_pretrained: microsoft/cvt-13-384-22ks
 
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
 train_dataset: [FaceForensics++]
-test_dataset: [Celeb-DF-v2, roop, FaceShifter]
+#test_dataset: [Celeb-DF-v2, roop, FaceShifter]
+test_dataset: [Celeb-DF-v2]
 dataset_type: blend
 
 compression: c23  # compression-level for videos
-train_batchSize: 16   # training batch size
+train_batchSize: 12   # w24
+# train_batchSize: 64   # cvt13
 test_batchSize: 32   # test batch size
 workers: 8   # number of data loading workers
 frame_num: {'train': 8, 'test': 32}   # number of frames to use per video in training and testing
-resolution: 256   # resolution of output image to network
+resolution: 384   # resolution of output image to network
 with_mask: false   # whether to include mask information in the input
 with_landmark: true   # whether to include facial landmark information in the input
-save_ckpt: false   # whether to save checkpoint
-save_feat: false   # whether to save features
+save_ckpt: true   # whether to save checkpoint
+save_feat: true   # whether to save features
 
 
 # data augmentation
-use_data_augmentation: False  # Add this flag to enable/disable data augmentation
+use_data_augmentation: True  # Add this flag to enable/disable data augmentation
 data_aug:
   flip_prob: 0.5
   rotate_prob: 0.5
@@ -55,7 +53,7 @@ std: [0.229, 0.224, 0.225]
 # optimizer config
 optimizer:
   # choose between 'adam' and 'sgd'
-  type: adam
+  type: sam
   adam:
     lr: 0.0002  # learning rate
     beta1: 0.9  # beta1 for Adam optimizer
@@ -72,7 +70,8 @@ optimizer:
     momentum: 0.9  # momentum for SGD optimizer
 
 # training config
-lr_scheduler: step   # learning rate scheduler step
+#lr_scheduler: step   # learning rate scheduler step
+lr_scheduler: linear
 lr_step: 3
 lr_gamma: 0.4   # learning rate scheduler
 nEpochs: 20   # number of epochs to train for
@@ -81,7 +80,7 @@ save_epoch: 1   # interval epochs for saving models
 rec_iter: 100   # interval iterations for recording
 logdir: ./logs   # folder to output images and logs
 manualSeed: 1024   # manual seed for random number generation
-save_ckpt: false   # whether to save checkpoint
+
 
 # loss function
 loss_func: cross_entropy   # loss function to use

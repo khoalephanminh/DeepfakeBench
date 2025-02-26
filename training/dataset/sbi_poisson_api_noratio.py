@@ -63,6 +63,15 @@ def dynamic_poisson_blend(source,target,mask):
 	mask = (mask * 255).astype(np.uint8)
 	mask = np.squeeze(mask)
 	mask = np.stack([mask, mask, mask], axis=-1)
+	# print("mask = ", mask.shape, mask.dtype)
+	# print("mask unique = ", np.unique(mask))
+
+	# center = (source.shape[0] // 2, source.shape[1] // 2)
+	# # print("center=", center)
+	# result = cv2.seamlessClone(source, target, mask, center, cv2.NORMAL_CLONE)
+
+	# print("result = ", result.shape, result.dtype)
+	# print("result = ", np.unique(result))
 
 	monoMaskImage = cv2.split(mask)[0] # reducing the mask to a monochrome
 	br = cv2.boundingRect(monoMaskImage) # bounding rect (x,y,width,height)

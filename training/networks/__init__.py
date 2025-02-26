@@ -16,3 +16,4 @@ from .efficientnetb5 import EfficientNetB5
 from .xception_sladd import Xception_SLADD
 from .vision_transformer import VisionTransformer
 from .cvt import CvT
+from .mixmodel import MixModel
