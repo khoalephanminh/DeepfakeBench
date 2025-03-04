@@ -11,12 +11,13 @@ backbone_config:
     inc: 3
     dropout: false
   model_2:
+    npr: true
     mode: original
     num_classes: 2
     inc: 3
     dropout: false
     pretrained_path: ./training/pretrained/efficientnet-b4-6ed6700e.pth
-  freeze_finetune_path_1: logs/training/fsbi/fsbi_2025-02-05-20-57-18_89.87_res380+effnetb4+adam+linear/test/Celeb-DF-v2/ckpt_best.pth
+  freeze_finetune_path_1: logs/training/sbi/sbi_2025-02-06-13-56-37/test/Celeb-DF-v2/ckpt_best.pth
   num_classes: 2
 
 # dataset
@@ -27,19 +28,19 @@ test_dataset: [Celeb-DF-v2]
 #dataset_type: blend
 
 compression: c23  # compression-level for videos
-train_batchSize: 64   # training batch size
+train_batchSize: 32   # training batch size
 test_batchSize: 32   # test batch size
 workers: 8   # number of data loading workers
 frame_num: {'train': 8, 'test': 32}   # number of frames to use per video in training and testing
 resolution: 380   # resolution of output image to network
 with_mask: false   # whether to include mask information in the input
-with_landmark: true   # whether to include facial landmark information in the input
+with_landmark: false   # whether to include facial landmark information in the input
 save_ckpt: true   # whether to save checkpoint
 save_feat: true   # whether to save features
 
 
 # data augmentation
-use_data_augmentation: false  # Add this flag to enable/disable data augmentation
+use_data_augmentation: true  # Add this flag to enable/disable data augmentation
 data_aug:
   flip_prob: 0.5
   rotate_prob: 0.5
@@ -61,7 +62,7 @@ optimizer:
   # choose between 'adam' and 'sgd'
   type: adam
   adam:
-    lr: 0.0002  # learning rate
+    lr: 0.0001  # learning rate 0.0002 initially
     beta1: 0.9  # beta1 for Adam optimizer
     beta2: 0.999 # beta2 for Adam optimizer
     eps: 0.00000001  # epsilon for Adam optimizer

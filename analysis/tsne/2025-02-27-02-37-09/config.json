@@ -1,0 +1,53 @@
+{
+    "output_name": "analysis/tsne/2025-02-27-02-37-09/tsne_visualization.png",
+    "n_components": 2,
+    "perplexity": 10,
+    "n_neighbors": 90,
+    "n_iter": 4000,
+    "learning_rate": 10,
+    "method": "fft",
+    "metric": "consine",
+    "random_state": 1024,
+    "model_name": "fsbi",
+    "backbone_name": "efficientnetb4",
+    "backbone_config": {
+        "mode": "original",
+        "num_classes": 2,
+        "inc": 3,
+        "dropout": false
+    },
+    "finetune_path": "logs/training/sbi/sbi_2025-02-06-13-56-37/test/Celeb-DF-v2/ckpt_best.pth",
+    "compression": "c23",
+    "test_batchSize": 32,
+    "workers": 8,
+    "frame_num": {
+        "test": 32
+    },
+    "test_dataset": "FaceForensics++",
+    "resolution": 380,
+    "with_mask": false,
+    "with_landmark": false,
+    "cuda": true,
+    "cudnn": true,
+    "loss_func": "cross_entropy",
+    "dataset_json_folder": "preprocessing/dataset_json",
+    "label_dict": {
+        "FF-real": 0,
+        "FF-DF": 1,
+        "FF-F2F": 2,
+        "FF-FS": 3,
+        "FF-NT": 4
+    },
+    "rgb_dir": "datasets/rgb",
+    "mean": [
+        0.485,
+        0.456,
+        0.406
+    ],
+    "std": [
+        0.229,
+        0.224,
+        0.225
+    ],
+    "total_time": 7.812186241149902
+}

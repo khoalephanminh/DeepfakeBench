@@ -239,10 +239,10 @@ class Trainer(object):
         ):
 
         self.logger.info("===> Epoch[{}] start!".format(epoch))
-        # if epoch>=1: 
-        if epoch>-1: 
-            # times_per_epoch = 1 # 2 initially
-            times_per_epoch = 2 # 2 initially
+        if epoch>=1: 
+        # if epoch>-1: 
+            times_per_epoch = 3 # 2 initially
+            # times_per_epoch = 2 # 2 initially
         else:
             times_per_epoch = 1
 

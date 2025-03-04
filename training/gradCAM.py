@@ -55,8 +55,8 @@ parser.add_argument('--use_smooth', type=int, default=0, help='Whether to use sm
 #parser.add_argument("--lmdb", action='store_true', default=False)
 args = parser.parse_args()
 
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = 'cpu'
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = 'cpu'
 
 class ImageDataset(Dataset):
     def __init__(self, input_folder, config):
@@ -95,8 +95,17 @@ class ImageDataset(Dataset):
         image = np.array(image)  # Convert to numpy array for data augmentation
 
         image0 = image
-        if self.config['model_name'] == 'fsbi':
-            image = get_dwt(image, (self.config['resolution'], self.config['resolution']))
+        
+        print("model name=", self.config['model_name'])
+        print("backbone name=", self.config['backbone_name'])
+
+        # if self.config['model_name'] == 'fsbi':
+        #     image = get_dwt(image, (self.config['resolution'], self.config['resolution']))
+
+        if self.config['model_name'] == 'sbi_crop':
+            print("crop image 0.2")
+            image = self.random_crop(image, 0.2)  
+            
         image = self.normalize(self.to_tensor(image))
         return [image0, image]  # Return the original image and normalized image
 
@@ -104,6 +113,32 @@ class ImageDataset(Dataset):
         image_path = self.image_paths[idx]
         images = self.load_rgb(image_path)
         return images
+
+    def random_crop(self, image, crop_percent, resolution = (380, 380)):
+        """
+        Randomly crops an image by a given percentage from an already enlarged image (1.3x the original).
+
+        :param image: Input image (numpy array) assumed to be 1.3x the original size.
+        :param crop_percent: Fraction of the original size to keep (e.g., 0.2 means cropping 20%).
+        :return: Cropped image.
+        """
+        H_curr, W_curr = image.shape[:2]  # Get current size
+
+        # Compute new crop size
+        scale_factor = (1 + crop_percent) / 1.3  # Example: (1.2 / 1.3) for 20% crop
+        H_new, W_new = int(H_curr * scale_factor), int(W_curr * scale_factor)
+
+        # Compute the amount to crop from each side
+        crop_top = (H_curr - H_new) // 2
+        crop_bottom = H_curr - H_new - crop_top
+        crop_left = (W_curr - W_new) // 2
+        crop_right = W_curr - W_new - crop_left
+
+        # Perform cropping
+        cropped_image = image[crop_top:H_curr - crop_bottom, crop_left:W_curr - crop_right]
+        cropped_image = cv2.resize(cropped_image, resolution, interpolation=cv2.INTER_CUBIC) # hard coding 380 for now
+
+        return cropped_image
 
 def load_images_in_batches(input_folder, config, batch_size):
     dataset = ImageDataset(input_folder, config)
@@ -128,6 +163,12 @@ def visualize_gradcam(model, input_tensors, output_folder, use_smooth=0):
     if model_name == 'EfficientNetB4':
         # target_layers = [model.backbone.efficientnet._blocks[22]]
         target_layers = [model.backbone.efficientnet._conv_head]
+    if model_name == 'CvT':
+        target_layers = [model.backbone.cvt.cvt.encoder.stages[2].layers[19].attention.attention.convolution_projection_value.convolution_projection.convolution] # this is correct
+        # target_layers = [model.backbone.cvt.cvt.encoder.stages[0].layers[1].attention.attention.convolution_projection_value.convolution_projection.convolution]
+
+        # print("target_layers=", target_layers)
+
 
     targets = [ClassifierOutputTarget(1)]
 
@@ -229,6 +270,7 @@ def main():
         except:
             epoch = 0
         ckpt = torch.load(weights_path, map_location=device)
+        ckpt = {k.replace('module.backbone.', 'backbone.'): v for k, v in ckpt.items()} # added for cvt
         model.load_state_dict(ckpt, strict=True)
         print('===> Load checkpoint done!')
     else:
@@ -244,6 +286,8 @@ def main():
     # Process batches through the model
     print("use_smooth=", use_smooth)
     for batch in dataloader:
+        # print("batch len, type=", len(batch[0]), type(batch[0]))
+        # print("unique=", torch.unique(batch[0]))
         visualize_gradcam(model, batch, output_folder, use_smooth = use_smooth)
 
 if __name__ == '__main__':

@@ -27,6 +27,9 @@ class CvT(nn.Module):
         # Load the Convolutional Vision Transformer (CvT) model
         #self.cvt = CvtForImageClassification.from_pretrained('microsoft/cvt-21')
         self.cvt = CvtForImageClassification.from_pretrained(self.from_pretrained)
+        #output self.cvt to txt
+        # with open('cvt.txt', 'w') as f:
+        #    f.write(str(self.cvt))
         self.cvt.classifier = nn.Identity()
 
         # Initialize the last_layer layer

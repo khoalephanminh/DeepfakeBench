@@ -1,68 +1,158 @@
+'''
+sample script:
+> CUDA_VISIBLE_DEVICES=5 python -m analysis.tsne \
+    --config_path analysis/configs/tsne-hoang.yaml
+'''
+
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.manifold import TSNE
-import pickle
+from cuml.manifold import TSNE
+#from sklearn.manifold import TSNE
+import torch
 
-color_map = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple']
-label_dict = {
-        0: 'FF_Real',    1: 'Deepfakes', 2: 'Face2Face', 3: 'FaceSwap', 4: 'NeuralTextures', 
-    }
+import os
+import sys
+import time
+import json
+import yaml
+import argparse
+from tqdm import tqdm
+from datetime import datetime
 
-def tsne_draw(x_transformed, numerical_labels, ax, epoch=0, log='', detector_name=None):
-    labels = [label_dict[label] for label in numerical_labels]
-
-    tsne_df = pd.DataFrame(x_transformed, columns=['X', 'Y'])
-    tsne_df["Targets"] = labels
-    tsne_df["NumericTargets"] = numerical_labels
-    tsne_df.sort_values(by="NumericTargets", inplace=True)
-    
-    marker_list = ['*' if label == 0 else 'o' for label in tsne_df["NumericTargets"]]
-
-    for _x, _y, _c, _m in zip(tsne_df['X'], tsne_df['Y'], [color_map[i] for i in tsne_df["NumericTargets"]], marker_list):
-        ax.scatter(_x, _y, color=_c, s=30, alpha=0.7, marker=_m)
-
-    print(f'epoch{epoch} ' + log)
-    ax.axis('off')
+from training.detectors import DETECTOR
+from training.dataset import *
+from torch.nn.parallel import DistributedDataParallel as DDP
 
 
-detector_name_list = [
-    '/mntcephfs/lab_data/zhiyuanyan/benchmark_results/tsne/tsne_dict_xception_0_270.pkl',
-    '/mntcephfs/lab_data/zhiyuanyan/benchmark_results/tsne/tsne_dict_xception_0.pkl',
-]
+parser = argparse.ArgumentParser(description='Process some paths.')
+parser.add_argument('--config_path', type=str,
+                    default='/data/home/zhiyuanyan/DeepfakeBenchv2/training/config/detector/sbi.yaml',
+                    help='path to detector YAML file')
+args = parser.parse_args()
 
-tsne = TSNE(n_components=2, perplexity=20, random_state=1024, learning_rate=250)
-fig, axs = plt.subplots(1, 2, figsize=(20,10))
 
-for i, tsne_dict in enumerate(detector_name_list):
-    print(f'Processing {tsne_dict}...')
-    name = str(tsne_dict.split('/')[-1].split('.')[0].split('_')[-1])
-    with open(tsne_dict, 'rb') as f:
-        tsne_dict = pickle.load(f)
-    
-    feat = tsne_dict['feat'].reshape((tsne_dict['feat'].shape[0], -1))
-    label_spe = tsne_dict['label_spe']
+now = datetime.now()
+formatted_time = now.strftime("%Y-%m-%d-%H-%M-%S")
+output_dir = f'analysis/tsne/{formatted_time}'
 
-    label_0_indices = np.where(label_spe == 0)[0][:2500]
-    other_label_indices = np.where(label_spe != 0)[0]
-    num_samples = len(label_0_indices)
-    other_label_indices_sampled = np.random.choice(other_label_indices, size=num_samples, replace=False)
-    sampled_indices = np.concatenate((label_0_indices, other_label_indices_sampled))
-    np.random.shuffle(sampled_indices)
+def dump_config(config):
+    os.makedirs(output_dir, exist_ok=True)
+    with open(f'{output_dir}/config.yaml', 'w', encoding='utf-8') as f:
+        yaml.dump(config, f, default_flow_style=None)
 
-    feat = feat[sampled_indices]
-    label_spe = label_spe[sampled_indices]
-    feat_transformed = tsne.fit_transform(feat)
-    scatter = tsne_draw(feat_transformed, label_spe, ax=axs[i], epoch=0, log='share_in_specific', detector_name='xception')
+def main():
+    ########### parse options and load config ###########
+    with open(args.config_path, 'r') as f:
+        config = yaml.safe_load(f)
+    config['output_dir'] = f'{output_dir}'
+    dump_config(config)
 
-    # # give a title to the subplot
-    # axs[i].set_title(f'Xception with {name} frames')  
+    ########### model ###########
+    detector_class = DETECTOR[config['model_name']]
+    detector = detector_class(config).cuda()
+    # load ckpt
+    if os.path.isfile(config['finetune_path']):
+        saved = torch.load(config['finetune_path'], map_location='cpu')
+        suffix = config['finetune_path'].split('.')[-1]
+        if suffix == 'p':
+            saved = saved.state_dict()
+        if type(detector) is DDP:
+            # add the prefix 'module.' to the keys if needed
+            saved = {k.replace('backbone.', 'module.backbone.'): v for k, v in saved.items()}
+            saved = {k.replace('module.module.', 'module.'): v for k, v in saved.items()}
+        else:
+            # remove the prefix 'module.' from the keys if needed
+            saved = {k.replace('module.backbone.', 'backbone.'): v for k, v in saved.items()}
+        detector.load_state_dict(saved)
+    else:
+        raise NotImplementedError(
+            "=> no model found at '{}'".format(config['finetune_path']))
 
-# create a legend for the whole figure after the loop
-handles = [plt.Line2D([0], [0], marker='*', color='w', markerfacecolor=color_map[i], markersize=10) if i == 0 else plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=color_map[i], markersize=10) for i in range(5)]
-labels = [label_dict[i] for i in range(5)]
-# fig.legend(handles, labels, title="Classes", loc="upper right", fontsize=14)
+    ########### dataset ###########
+    test_set = DeepfakeAbstractBaseDataset(
+        config=config,
+        mode='test',
+    )
+    test_data_loader = torch.utils.data.DataLoader(
+        dataset=test_set,
+        batch_size=config['test_batchSize'],
+        shuffle=False,
+        num_workers=int(config['workers']),
+        collate_fn=test_set.collate_fn,
+        drop_last = (config['test_dataset']=='DeepFakeDetection'),
+    )
 
-plt.tight_layout()
-plt.savefig('xcep_4vs270_3.png')
+    ########### t-SNE ###########
+
+    # Bật chế độ đánh giá (eval) nếu là mô hình deep learning
+    detector.eval()
+
+    # Lưu các feature vectors và labels
+    features = []
+    labels = []
+
+    # Lặp qua dataset và trích xuất đặc trưng
+    with torch.no_grad():
+        for i, data_dict in tqdm(enumerate(test_data_loader),total=len(test_data_loader)):
+            # print(data_dict.keys())
+            # > dict_keys(['image', 'label', 'landmark', 'mask'])
+            # print(data_dict['label'])
+            # > tensor([1])
+            
+            # get data
+            if 'label_spe' in data_dict:
+                data_dict.pop('label_spe')  # remove the specific label
+
+            # data_dict['label'] = torch.where(data_dict['label']!=0, 1, 0)  # fix the label to 0 and 1 only
+
+            # move data to GPU elegantly
+            for key in data_dict.keys():
+                if data_dict[key]!=None:
+                    data_dict[key]=data_dict[key].cuda()
+            # model forward without considering gradient computation
+            predictions = detector(data_dict)
+            labels += list(data_dict['label'].cpu().numpy())
+            features += list(predictions['feat'].cpu().numpy())
+
+    # Free detector
+    del detector
+    torch.cuda.empty_cache()
+
+    # Chuyển list sang numpy array
+    features = np.array(features)
+    print(f"Feature shape: {features.shape}")
+
+    # Giảm chiều với t-SNE
+    start_time = time.time()
+    for perplexity in config['perplexities']:
+        perplexity = config['perplexity']
+        output_name = f"{output_dir}/tSNE_perplexity_{perplexity}.png"
+        tsne = TSNE(n_components=config['n_components'],
+                    perplexity=perplexity,
+                    n_neighbors=config['n_neighbors'],
+                    random_state=config['random_state'],
+                    n_iter=config['n_iter'],
+                    learning_rate=config['learning_rate'],
+                    metric=config['metric'])
+        X_embedded = tsne.fit_transform(features)
+
+        # Vẽ scatter plot và lưu vào file
+        plt.figure(figsize=(10, 8))
+        scatter = plt.scatter(X_embedded[:, 0], X_embedded[:, 1], c=labels, cmap="jet", alpha=0.7)
+        plt.colorbar(scatter, label="Labels")
+        plt.title(f"t-SNE Visualization with Perplexity={perplexity}")
+        plt.xlabel("t-SNE Dimension 1")
+        plt.ylabel("t-SNE Dimension 2")
+
+        # Lưu file thay vì hiển thị
+        plt.savefig(output_name, dpi=300)  # Lưu với độ phân giải cao
+        plt.close()  # Đóng figure để tránh chiếm bộ nhớ
+    end_time = time.time()
+
+    print(f"t-SNE visualization completed in {end_time - start_time:.2f} seconds, stored at {config['output_dir']}")
+    config['total_time'] = end_time - start_time
+    dump_config(config)
+
+
+if __name__ == "__main__":
+    main()

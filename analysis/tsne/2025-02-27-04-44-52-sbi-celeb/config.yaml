@@ -1,0 +1,30 @@
+backbone_config: {dropout: false, inc: 3, mode: original, num_classes: 2}
+backbone_name: efficientnetb4
+compression: c23
+cuda: true
+cudnn: true
+dataset_json_folder: preprocessing/dataset_json
+finetune_path: logs/training/sbi/sbi_2025-02-06-13-56-37/test/Celeb-DF-v2/ckpt_best.pth
+frame_num: {test: 32}
+label_dict: {CelebDFv2_fake: 1, CelebDFv2_real: 0}
+learning_rate: 200
+loss_func: cross_entropy
+mean: [0.485, 0.456, 0.406]
+method: fft
+metric: euclidean
+model_name: sbi
+n_components: 2
+n_iter: 1000
+n_neighbors: 90
+output_name: analysis/tsne/2025-02-27-04-44-52/tsne_visualization.png
+perplexity: 30
+random_state: 1024
+resolution: 380
+rgb_dir: datasets/rgb
+std: [0.229, 0.224, 0.225]
+test_batchSize: 32
+test_dataset: Celeb-DF-v2
+total_time: 3.2802255153656006
+with_landmark: false
+with_mask: false
+workers: 8

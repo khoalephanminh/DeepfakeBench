@@ -212,6 +212,7 @@ def main():
         except:
             epoch = 0
         ckpt = torch.load(weights_path, map_location=device)
+        ckpt = {k.replace('module.backbone.', 'backbone.'): v for k, v in ckpt.items()} # added for cvt
         model.load_state_dict(ckpt, strict=True)
         print('===> Load checkpoint done!')
     else:

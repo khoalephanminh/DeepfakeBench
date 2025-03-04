@@ -1,5 +1,6 @@
 mode: train
-lmdb: True
+# lmdb: True
+lmdb: False
 dry_run: false
 rgb_dir: 'datasets/rgb'
 lmdb_dir:  'datasets/lmdb'

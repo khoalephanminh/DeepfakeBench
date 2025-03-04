@@ -110,8 +110,9 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
         }
         print("len=", len(self.image_list), len(self.label_list))
         
-        self.transform = self.init_data_aug_method()
-        
+        if self.mode == 'train':
+            self.transform = self.init_data_aug_method()
+
     def init_data_aug_method(self):
         print("withlm=", self.config['with_landmark'])
         trans = A.Compose([           
@@ -163,7 +164,7 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
         video_name_list = []
 
         # Try to get the dataset information from the JSON file
-        print("json=", self.config['dataset_json_folder'])
+        # print("json=", self.config['dataset_json_folder'])
         if not os.path.exists(self.config['dataset_json_folder']):
             self.config['dataset_json_folder'] = self.config['dataset_json_folder'].replace('/Youtu_Pangu_Security_Public', '/Youtu_Pangu_Security/public')
         try:
@@ -194,6 +195,7 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
         # Get the information for the current dataset
         for label in dataset_info[dataset_name]:
             sub_dataset_info = dataset_info[dataset_name][label][self.mode]
+            # print("len dataset_info[dtsname]={}".format(len(sub_dataset_info)))
             # sub_dataset_info = dataset_info[dataset_name][label]['test']
             # Special case for FaceForensics++ and DeepFakeDetection, choose the compression type
             if cp == None and dataset_name in ['FF-DF', 'FF-F2F', 'FF-FS', 'FF-NT', 'FaceForensics++','DeepFakeDetection','FaceShifter']:
@@ -294,7 +296,9 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
         
         # print("frame_path_list=", frame_path_list)
         #output frame_path_list to txt
-        with open(f'./cdfv2_frame_path_list.txt', 'w') as f:
+
+        print("dataset_name=", dataset_name)
+        with open(f'./cdfv2cropped_frame_path_list.txt', 'w') as f:
             for item in frame_path_list:
                 f.write("%s\n" % item)
 
@@ -318,9 +322,13 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
         if not self.lmdb:
             if not file_path[0] == '.':
                 # file_path =  f'./{self.config["rgb_dir"]}\\'+file_path
+                # print("file_path=", file_path)
+                # print("fp2 = ", f'./{self.config["rgb_dir"]}\\'+file_path)
                 file_path = os.path.join(f'./{self.config["rgb_dir"]}', file_path).replace('\\', '/')
+                # print("file_path2=", file_path)
             assert os.path.exists(file_path), f"{file_path} does not exist"
             img = cv2.imread(file_path)
+            # print("okok")
             if img is None:
                 raise ValueError('Loaded image is None: {}'.format(file_path))
         elif self.lmdb:
@@ -401,6 +409,7 @@ class DeepfakeAbstractBaseDataset(data.Dataset):
                 file_path = os.path.join(f'./{self.config["rgb_dir"]}', file_path).replace('\\', '/')
             if os.path.exists(file_path):
                 landmark = np.load(file_path)
+                landmark=self.rescale_landmarks(np.float32(landmark), original_size=256, new_size=self.config['resolution']) # add this
             else:
                 return np.zeros((81, 2))
         else:

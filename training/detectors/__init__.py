@@ -30,6 +30,7 @@ from .srm_detector import SRMDetector
 # from .xclip_detector import XCLIPDetector
 from .sbi_detector import SBIDetector
 from .sbi_poisson_detector import SBIPoissonDetector
+from .sbi_crop_detector import SBICropDetector
 # from .ftcn_detector import FTCNDetector
 # from .i3d_detector import I3DDetector
 from .altfreezing_detector import AltFreezingDetector
@@ -46,3 +47,4 @@ from .iid_detector import IIDDetector
 from .tall_detector import TALLDetector
 from .ProDet_detector import ProDetDetector
 from .fsbi_detector import FSBIDetector
+from .npr_detector import NPRDetector

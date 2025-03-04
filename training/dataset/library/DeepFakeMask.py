@@ -126,6 +126,66 @@ class components(Mask):  # pylint: disable=invalid-name
             cv2.fillConvexPoly(mask, cv2.convexHull(merged), 255.)  # pylint: disable=no-member
         return mask
 
+class inner_components(Mask):  # pylint: disable=invalid-name
+    """ Component model mask """
+    def build_mask(self):
+        mask = np.zeros(self.face.shape[0:2] + (1, ), dtype=np.float32)
+
+        # r_eye = (self.landmarks[17:22],
+        #          self.landmarks[27:28],
+        #          self.landmarks[31:36])
+        # l_eye = (self.landmarks[22:27],
+        #          self.landmarks[27:28],
+        #          self.landmarks[31:36])
+        # nose = (self.landmarks[27:31], self.landmarks[31:36])
+        # mouth = (self.landmarks[48:60], self.landmarks[60:68])
+        # parts = [r_eye, l_eye, nose, mouth]
+        r_eye = (self.landmarks[17:22],
+                 self.landmarks[27:28],
+                 self.landmarks[31:36])
+        l_eye = (self.landmarks[22:27],
+                 self.landmarks[27:28],
+                 self.landmarks[31:36])
+        nose = (self.landmarks[27:31], self.landmarks[31:36])
+        mouth = (self.landmarks[48:60], self.landmarks[60:68])
+        x_48, y_48 = self.landmarks[48]
+        x_54, y_54 = self.landmarks[54]
+        x_60, y_60 = self.landmarks[60]
+        x_64, y_64 = self.landmarks[64]
+        x_17, y_17 = self.landmarks[17]
+        x_26, y_26 = self.landmarks[26]
+        wider_mouth = (np.array([((x_48 + x_17) / 2, y_48)], dtype=np.int32), np.array([((x_54 + x_26) / 2, y_54)], dtype=np.int32))
+
+        average_y = (self.landmarks[8][1] - self.landmarks[57][1]) / 2
+        adjusted_mouth = np.copy(self.landmarks[48:60])
+        adjusted_mouth[:, 1] += average_y.astype(adjusted_mouth.dtype)
+        mouth = (adjusted_mouth, self.landmarks[60:68])
+
+        higher_eyebrows = (self.landmarks[17:22] - np.array([0, 10], dtype=self.landmarks.dtype), 
+                           self.landmarks[22:27] - np.array([0, 10], dtype=self.landmarks.dtype))
+
+        parts = [r_eye, l_eye, nose, mouth, wider_mouth, higher_eyebrows]
+
+
+
+        mergeds = []
+        for item in parts:
+            merged = np.concatenate(item)
+            mergeds.append(merged)
+        merged = np.concatenate(mergeds)
+        cv2.fillConvexPoly(mask, cv2.convexHull(merged), 255.)  # pylint: disable=no-member
+        return mask
+
+    def display_landmarks(self):
+        image = self.face.copy()
+        for idx, point in enumerate(self.landmarks):
+            x, y = point
+            cv2.circle(image, (x, y), 2, (0, 255, 0), -1)  # Draw a small green dot
+            cv2.putText(image, str(idx), (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)  # Label the dot
+        
+        rand_idx = np.random.randint(0, 1000)
+        cv2.imwrite(f'ldm_points/{rand_idx}.png', image)
+
 
 class extended(Mask):  # pylint: disable=invalid-name
     """ Extended mask

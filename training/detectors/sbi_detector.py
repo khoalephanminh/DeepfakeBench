@@ -96,7 +96,18 @@ class SBIDetector(AbstractDetector):
     def get_losses(self, data_dict: dict, pred_dict: dict) -> dict:
         label = data_dict['label']
         pred = pred_dict['cls']
-        loss = self.loss_func(pred, label)
+        feat = pred_dict['feat']
+
+        if self.config['loss_func'] == 'supcon':
+            # convert [batch, 1792] to [batch, 1, 1792]
+            feat_supcon = feat.unsqueeze(1)
+            # create mask_supcon of shape [bsz, bsz], mask_{i,j}=1 if sample j has the same class as sample i. Can be asymmetric.
+            mask_supcon = label.unsqueeze(0) == label.unsqueeze(1)
+            # print("labels=", label)
+            # print("mask_supcon=", mask_supcon)
+            loss = self.loss_func(feat_supcon, mask = mask_supcon)
+        else: 
+            loss = self.loss_func(pred, label)
         loss_dict = {'overall': loss}
         return loss_dict
     

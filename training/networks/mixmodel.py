@@ -27,6 +27,9 @@ class MixModel(nn.Module):
         self.model_2 = EfficientNetB4(config["model_2"])
         self.num_classes = config["num_classes"]
         self.last_layer = nn.Linear(1792 + 1792, self.num_classes)
+        
+        self.use_npr = config['model_2']['npr']
+        print("use_npr=", self.use_npr)
 
         freeze_finetune_path_1 = config.get("freeze_finetune_path_1", "")
         if freeze_finetune_path_1 != "":
@@ -44,14 +47,26 @@ class MixModel(nn.Module):
         for param in self.model_1.parameters():
             param.requires_grad = False
 
+    def interpolate(self, img, factor):
+        return F.interpolate(F.interpolate(img, scale_factor=factor, mode='nearest', recompute_scale_factor=True), scale_factor=1/factor, mode='nearest', recompute_scale_factor=True)
+    
     def features(self, input):
+        input1 = input
+        input2 = input
+
+        if self.use_npr:
+            NPR  = input2 - self.interpolate(input2, 0.5)
+            input2 = NPR*2.0/3.0
+        
         x1 = self.model_1.features(input)
         x2 = self.model_2.features(input)
+
         return torch.cat([x1, x2], dim=1)
 
     def classifier(self, x):
-        x = F.adaptive_avg_pool2d(x, (1, 1))
-        x = x.view(x.size(0), -1)
+        ## old efnb4
+        #x = F.adaptive_avg_pool2d(x, (1, 1))
+        #x = x.view(x.size(0), -1)
         out = self.last_layer(x)
         return out
 

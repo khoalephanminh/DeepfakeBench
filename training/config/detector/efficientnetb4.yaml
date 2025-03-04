@@ -3,8 +3,8 @@ log_dir: logs/evaluations/effnb4
 
 # model setting
 # pretrained: /home/zhiyuanyan/disfin/deepfake_benchmark/training/pretrained/xception-b5690688.pth   # path to a pre-trained model, if using one
-pretrained: ./training/pretrained/efficientnet-b4-6ed6700e.pth   # path to a pre-trained model, if using one
-model_name: efficientnetb4   # model name
+# pretrained: ./training/pretrained/efficientnet-b4-6ed6700e.pth   # path to a pre-trained model, if using one
+model_name: fsbi   # model name
 backbone_name: efficientnetb4  # backbone name
 
 #backbone setting
@@ -13,18 +13,19 @@ backbone_config:
   inc: 3
   dropout: false
   mode: Original
+  pretrained_path: ./training/pretrained/efficientnet-b4-6ed6700e.pth   # path to a pre-trained model, if using one
 
 # dataset
 all_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT, FaceShifter, DeepFakeDetection, Celeb-DF-v1, Celeb-DF-v2, DFDCP, DFDC, DeeperForensics-1.0, UADFV]
-train_dataset: [FF-NT]
-test_dataset: [FaceForensics++, FF-F2F, FF-DF, FF-FS, FF-NT]
+train_dataset: [FaceForensics++]
+test_dataset: [Celeb-DF-v2]
 
 compression: c23  # compression-level for videos
 train_batchSize: 32   # training batch size
 test_batchSize: 32   # test batch size
 workers: 8   # number of data loading workers
 frame_num: {'train': 32, 'test': 32}   # number of frames to use per video in training and testing
-resolution: 256   # resolution of output image to network
+resolution: 380   # resolution of output image to network
 with_mask: false   # whether to include mask information in the input
 with_landmark: false   # whether to include facial landmark information in the input
 save_ckpt: true   # whether to save checkpoint

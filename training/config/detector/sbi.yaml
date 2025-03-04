@@ -58,7 +58,7 @@ std: [0.229, 0.224, 0.225]
 # optimizer config
 optimizer:
   # choose between 'adam' and 'sgd'
-  type: sam
+  type: adam
   adam:
     lr: 0.0002  # learning rate, initially 0.0002
     beta1: 0.9  # beta1 for Adam optimizer
@@ -89,6 +89,7 @@ save_ckpt: false   # whether to save checkpoint
 
 # loss function
 loss_func: cross_entropy   # loss function to use
+# loss_func: supcon   # loss function to use
 losstype: null
 
 # metric

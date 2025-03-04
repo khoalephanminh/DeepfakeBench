@@ -1,7 +1,7 @@
 # model setting
 model_name: fsbi
 backbone_name: cvt
-finetune_path: logs/training/fsbi/fsbi_2025-02-13-00-46-12_90.9_cvtw24_384_sbi_sam/test/Celeb-DF-v2/ckpt_best.pth
+# finetune_path: logs/training/fsbi/fsbi_2025-02-13-00-46-12_90.9_cvtw24_384_sbi_sam/test/Celeb-DF-v2/ckpt_best.pth
 
 #backbone setting
 backbone_config:

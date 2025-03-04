@@ -71,6 +71,8 @@ def prepare_training_data(config):
             train_set = SBIDataset(config, mode='train')
         elif config['model_name'] == 'sbi_poisson':
             train_set = SBIPoissonDataset(config, mode='train')
+        elif config['model_name'] == 'sbi_crop':
+            train_set = SBICropDataset(config, mode='train')
         elif config['model_name'] == 'fsbi':
             train_set = FSBIDataset(config, mode='train')
         elif config['model_name'] == 'lsda':
@@ -156,6 +158,7 @@ def prepare_testing_data(config):
 
     test_data_loaders = {}
     for one_test_name in config['test_dataset']:
+        print("one_test_name: ", one_test_name)
         test_data_loaders[one_test_name] = get_test_data_loader(config, one_test_name)
     return test_data_loaders
 

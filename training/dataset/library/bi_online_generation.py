@@ -8,7 +8,7 @@ import os
 import random
 from PIL import Image
 from imgaug import augmenters as iaa
-from .DeepFakeMask import dfl_full,facehull,components,extended
+from .DeepFakeMask import dfl_full,facehull,components,extended,inner_components
 import cv2
 import tqdm
 
@@ -34,6 +34,10 @@ def random_get_hull(landmark,img1,hull_type):
     elif hull_type == 3:
         mask = facehull(landmarks=landmark.astype('int32'),face=img1, channels=3).mask
         return mask/255
+    elif hull_type == 4:
+        mask_instance = inner_components(landmarks=landmark.astype('int32'),face=img1, channels=3)
+        # mask_instance.display_landmarks()
+        return mask_instance.mask/255
 
 def random_erode_dilate(mask, ksize=None):
     if random.random()>0.5:

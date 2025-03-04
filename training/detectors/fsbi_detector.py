@@ -58,6 +58,7 @@ class FSBIDetector(AbstractDetector):
         super().__init__()
         self.config = config
         self.backbone = self.build_backbone(config)
+        # print("self.backbone=", self.backbone)
         self.loss_func = self.build_loss(config)
         self.prob, self.label = [], []
         self.video_names = []

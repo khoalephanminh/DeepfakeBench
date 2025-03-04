@@ -21,9 +21,9 @@ from training.dataset.albu import IsotropicResize
 from training.dataset.abstract_dataset import DeepfakeAbstractBaseDataset
 from training.dataset.sbi_poisson_api import SBI_API
 
-# if os.path.exists('./sbi_output_poisson'):
-#     shutil.rmtree('./sbi_output_poisson')
-# os.makedirs('./sbi_output_poisson', exist_ok=True)
+if os.path.exists('./sbi_output_poisson'):
+    shutil.rmtree('./sbi_output_poisson')
+os.makedirs('./sbi_output_poisson', exist_ok=True)
 
 class SBIPoissonDataset(DeepfakeAbstractBaseDataset):
     def __init__(self, config=None, mode='train'):
@@ -74,15 +74,6 @@ class SBIPoissonDataset(DeepfakeAbstractBaseDataset):
         # real_image_bgr = cv2.cvtColor(real_image, cv2.COLOR_RGB2BGR)
         # fake_poisson_image_bgr = cv2.cvtColor(fake_poisson_image, cv2.COLOR_RGB2BGR)
 
-        # # if index == 604:
-        # #     print("idx, landmark shape: ", index, landmark.shape)
-        # #     print("landmark=", landmark)
-
-        # # # Draw landmark points on the images
-        # # for point in landmark:
-        # #     cv2.circle(fake_image_bgr, (int(point[0]), int(point[1])), 2, (0, 0, 255), -1)
-        # #     cv2.circle(real_image_bgr, (int(point[0]), int(point[1])), 2, (0, 0, 255), -1)
-
         # # Save images using cv2.imwrite
         # randid = np.random.randint(1, 1000) 
         # # os.makedirs('./sbi_output_poisson', exist_ok=True)
@@ -100,7 +91,7 @@ class SBIPoissonDataset(DeepfakeAbstractBaseDataset):
         # if random.random() < 0.7:
         rng = random.Random()  # Create a new instance
         value = rng.random()
-        if value < 0.9: #<2 mean no poisson
+        if value < 2: #<2 mean no poisson
             return {"fake": (fake_image_trans, fake_label), 
                 "real": (real_image_trans, real_label)}
         else:

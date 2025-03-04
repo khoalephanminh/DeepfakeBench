@@ -27,7 +27,13 @@ warnings.filterwarnings('ignore')
 
 from training.dataset.utils.fpie.process import GridProcessor
 
+if os.path.exists('./poisson_nodup_output'):
+    shutil.rmtree('./poisson_nodup_output')
+os.makedirs('./poisson_nodup_output', exist_ok=True)
 
+# if os.path.exists('./ldm_points'):
+#     shutil.rmtree('./ldm_points')
+# os.makedirs('./ldm_points', exist_ok=True)
 
 proc = GridProcessor(
 	'{max,src,avg}',
@@ -59,7 +65,7 @@ def dynamic_blend(source,target,mask):
 	img_blended=(mask_blured * source + (1 - mask_blured) * target)
 	return img_blended, mask_blured, mask_blured_copy
 
-def dynamic_poisson_blend(source,target,mask):
+def dynamic_poisson_blend(source,target,mask, type_clone = 'normal'):
 	mask = (mask * 255).astype(np.uint8)
 	mask = np.squeeze(mask)
 	mask = np.stack([mask, mask, mask], axis=-1)
@@ -73,7 +79,12 @@ def dynamic_poisson_blend(source,target,mask):
 	# 	result = cv2.seamlessClone(source, target, mask, centerOfBR, cv2.NORMAL_CLONE)
 	# else:
 	# 	result = cv2.seamlessClone(source, target, mask, centerOfBR, cv2.MIXED_CLONE)
-	result = cv2.seamlessClone(source, target, mask, centerOfBR, cv2.NORMAL_CLONE)
+	if type_clone == 'normal':
+		result = cv2.seamlessClone(source, target, mask, centerOfBR, cv2.NORMAL_CLONE)
+	elif type_clone == 'mixed':
+		result = cv2.seamlessClone(source, target, mask, centerOfBR, cv2.MIXED_CLONE)
+	else:
+		raise ValueError("Invalid type_clone argument")
 
 	return result
 	# return target
@@ -305,38 +316,43 @@ class SBI_API:
 
 		
 	def self_blending(self,img,landmark):
+		img_origin = img.copy()
 		H,W=len(img),len(img[0])
 		if np.random.rand()<0.25:
 			landmark=landmark[:68]
 		# mask=np.zeros_like(img[:,:,0])
 		# cv2.fillConvexPoly(mask, cv2.convexHull(landmark), 1.)
 		hull_type = random.choice([0, 1, 2, 3])
-		mask=random_get_hull(landmark,img,hull_type)[:,:,0]
+		mask_full=random_get_hull(landmark,img,hull_type)[:,:,0]
+		mask_inner=random_get_hull(landmark,img,4)[:,:,0]
 
 		source = img.copy()
 		if np.random.rand()<0.5:
 			source = self.source_transforms(image=source.astype(np.uint8))['image']
 		else:
 			img = self.source_transforms(image=img.astype(np.uint8))['image']
+		# source = self.source_transforms(image=source.astype(np.uint8))['image']
 
-		source, mask = self.randaffine(source,mask)
+		#Hereee
+		source_bg = dynamic_poisson_blend(mask_inner.copy(), img.copy(), mask_inner.copy(), 'normal')
+		# source_bg = img.copy()
 
-		source_tmp = source.copy()
-		img_tmp = img.copy()
-		mask_tmp = mask.copy()
+		source, mask_full = self.randaffine(source,mask_full) #uncomment
 
 		# img_poisson_blended = poisson_edit(source_tmp, img_tmp, mask_tmp, (0, 0)) # uncomment this
-		img_blended,mask, mask_copy=dynamic_blend(source,img,mask)
-		img_poisson_blended = dynamic_poisson_blend(source_tmp, img_tmp, mask_copy)
-		# img_poisson_blended = img_blended.copy()
+		img_blended,mmm, mask_db_copy=dynamic_blend(source.copy(),img.copy(),mask_full.copy())
+		# img_poisson_blended = dynamic_poisson_blend(source.copy(), img.copy(), mask.copy())
+		img_poisson_blended = dynamic_poisson_blend(source.copy(), source_bg.copy(), mask_full.copy(), 'normal')
 
-		# mask_uint8 = (np.squeeze(mask) * 255).astype(np.uint8)
-		# # os.makedirs('mask_images', exist_ok=True)
+	
 		# id = random.randint(0, 1000)
-		# print("img_poisson_blended = ", img_poisson_blended.shape, img_poisson_blended.dtype)
-		# print("img_poisson_blended = ", np.unique(img_poisson_blended))
-		# print("Unique values in mask_uint8:", id, np.unique(mask_uint8))
-		# cv2.imwrite(f'mask_images/mask_{id}.png', mask_uint8)
+
+		# cv2.imwrite(f'poisson_nodup_output/{id}_maskhull.png', (mask_inner.copy() * 255).astype(np.uint8))
+		# cv2.imwrite(f'poisson_nodup_output/{id}_maskfull.png', (mask_full.copy() * 255).astype(np.uint8))
+		# cv2.imwrite(f'poisson_nodup_output/{id}_origin.png', cv2.cvtColor(img_origin.copy(), cv2.COLOR_BGR2RGB))
+		# cv2.imwrite(f'poisson_nodup_output/{id}_source_bg.png', cv2.cvtColor(source_bg.copy(), cv2.COLOR_BGR2RGB))
+		# cv2.imwrite(f'poisson_nodup_output/{id}_source.png', cv2.cvtColor(source.copy(), cv2.COLOR_BGR2RGB))
+		# cv2.imwrite(f'poisson_nodup_output/{id}_blended.png', cv2.cvtColor(img_poisson_blended.copy(), cv2.COLOR_BGR2RGB))
 
 		img_blended = img_blended.astype(np.uint8)
 		img = img.astype(np.uint8)
@@ -344,7 +360,7 @@ class SBI_API:
 		# print("img_blended = ", np.unique(img_blended))
 		# print("img_poisson_blended = ", np.unique(img_poisson_blended))
 
-		return img,img_blended,img_poisson_blended,mask
+		return img,img_blended,img_poisson_blended,mmm
 		# return img,img_blended,mask
 	
 

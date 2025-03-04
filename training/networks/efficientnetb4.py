@@ -88,13 +88,14 @@ class EfficientNetB4(nn.Module):
         x = self.efficientnet.extract_features(x)
         if self.mode == 'adjust_channel':
             x = self.adjust_channel(x)
-        return x
-    def end_points(self,x):
-        return self.efficientnet.extract_endpoints(x)
-    def classifier(self, x):
         x = F.adaptive_avg_pool2d(x, (1, 1))
         x = x.view(x.size(0), -1)
-        
+        return x
+
+    def end_points(self,x):
+        return self.efficientnet.extract_endpoints(x)
+
+    def classifier(self, x):
         # Apply dropout if specified
         if self.dropout:
             x = self.dropout_layer(x)
